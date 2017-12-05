@@ -22,6 +22,11 @@ Bloque 2
 // Aquí van los siguientes 80 Bytes del archivo pasado como argumento.
 ...*/
 
+//File: Ejercicio2-Módulo2.c
+//Authors: Elena Merelo Molina y Antonio Gámiz Delgado
+//Compilation: gcc Ejercicio2-Módulo2.c -o Ejercicio2-Módulo2
+//Execution: ./Ejercicio2-Módulo2 prueba.txt. It generates salida.txt
+
 #include<sys/types.h>
 #include<sys/stat.h>
 +#include<fcntl.h>
