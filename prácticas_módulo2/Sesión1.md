@@ -15,8 +15,8 @@ char buf2[]="ABCDEFGHIJ";
 int main(int argc, char *argv[])
   int fd;
 
-  /*Crea un archivo en modo solo escritura, y S_IRUSR indica que el usuario 00400
-  tiene permiso de lectura, S_IWUSR que el usuario 00200 tiene permisos de escritura.
+  /*Crea un archivo en modo solo escritura, y S_IRUSR indica que el usuario
+  tiene permiso de lectura, S_IWUSR que el usuario tiene permisos de escritura.
   Si la llamada al sistema open devuelve un valor negativo es que ha fallado. */
   if( (fd=open("archivo",O_CREAT|O_WRONLY,S_IRUSR|S_IWUSR))<0) {  
     printf("\nError %d en open",errno);
