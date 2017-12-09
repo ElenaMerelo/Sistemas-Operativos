@@ -29,7 +29,7 @@ Bloque 2
 
 #include<sys/types.h>
 #include<sys/stat.h>
-+#include<fcntl.h>
+#include<fcntl.h>
 #include<stdio.h>
 #include<errno.h>
 
