@@ -1,5 +1,5 @@
-##Sesión 2. Llamadas al sistema para el SA (Parte II)
-###Actividad 2.1 Trabajo con llamadas de cambio de permisos
+## Sesión 2. Llamadas al sistema para el SA (Parte II)
+### Actividad 2.1 Trabajo con llamadas de cambio de permisos
 **Ejercicio 1.** ¿Qué hace el siguiente programa?
 ~~~c
 /*
@@ -66,16 +66,16 @@ $ls -l test*.txt
 -rwxrw-r-- 1 elena elena 0 dic  9 16:18 test2.txt
 -rwxrwSr-x 1 elena elena 0 dic  9 16:18 test.txt
 ~~~
-###Actividad 2.2 Trabajo con funciones estándar de manejo de directorios
+### Actividad 2.2 Trabajo con funciones estándar de manejo de directorios
 **Ejercicio 2.** Realiza un programa en C utilizando las llamadas al sistema necesarias que acepte como entrada:
 + Un argumento que representa el 'pathname' de un directorio.
 + Otro argumento que es un número octal de 4 dígitos (similar al que se puede utilizar para cambiar los permisos en la llamada al sistema `chmod`). Para convertir este argumento tipo cadena a un tipo numérico puedes utilizar la función strtol. Consulta el manual en línea para conocer sus argumentos.
 
 El programa tiene que usar el número octal indicado en el segundo argumento para cambiar los permisos de todos los archivos que se encuentren en el directorio indicado en el primer argumento.
 Además, debe proporcionar en la salida estándar una línea para cada archivo del directorio que esté formada por:
-<nombre_de_archivo> : <permisos_antiguos> <permisos_nuevos>
+*nombre_de_archivo : permisos_antiguos permisos_nuevos*
 Si no se pueden cambiar los permisos de un determinado archivo se debe especificar la siguiente información en la línea de salida:
-<nombre_de_archivo> : <errno> <permisos_antiguos>
+*nombre_de_archivo : errno permisos_antiguos*
 ~~~c
 // Nombre del archivo: ejer2,2.c
 #include<sys/types.h>
@@ -290,5 +290,15 @@ DESCRIPTION
                 the open file descriptor fd.
               * lchown()  is like chown(), but does not dereference symbolic links.
 ~~~
+
+### Actividad 2.3 Trabajo con la llamada nftw() para recorrer un sistema de
+archivos
+
+
+
+
+
+
+
 
 #
