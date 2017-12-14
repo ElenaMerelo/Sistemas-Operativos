@@ -114,16 +114,24 @@ uno de los siguientes fragmentos de código. Comprueba tu solución implementand
 uno de los siguientes fragmentos de código. Comprueba tu solución implementando un código
 para generar 20 procesos en cada caso, en donde cada proceso imprima su PID y el del padre,
 PPID.
+<<<<<<< HEAD
 >>>>>>> 98dd2e0b143860a2e94a0809b7f45fe349b3ca32
+=======
+~~~c
+>>>>>>> dc200f0697787904d7ac28503ea073efb2ad032b
 /*
 Jerarquía de procesos tipo 1
 */
 for (i=1; i < nprocs; i++) {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> dc200f0697787904d7ac28503ea073efb2ad032b
   if ((childpid= fork()) == -1) {
   fprintf(stderr, "Could not create child %d: %s\n",i,strerror(errno));
   exit(-1);
   }
+<<<<<<< HEAD
 }
 if (childpid)
   break;
@@ -136,15 +144,24 @@ exit(-1);
 if (childpid)
 break;
 >>>>>>> 98dd2e0b143860a2e94a0809b7f45fe349b3ca32
+=======
+}
+if (childpid)
+  break;
+>>>>>>> dc200f0697787904d7ac28503ea073efb2ad032b
 /*
 Jerarquía de procesos tipo 2
 */
 for (i=1; i < nprocs; i++) {
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> dc200f0697787904d7ac28503ea073efb2ad032b
   if ((childpid= fork()) == -1) {
   fprintf(stderr, "Could not create child %d: %s\n",i,strerror(errno));
   exit(-1);
   }
+<<<<<<< HEAD
 }
 if (!childpid)
   break;
@@ -159,6 +176,12 @@ if (!childpid)
 break;
 
 >>>>>>> 98dd2e0b143860a2e94a0809b7f45fe349b3ca32
+=======
+}
+if (!childpid)
+    break;
+~~~
+>>>>>>> dc200f0697787904d7ac28503ea073efb2ad032b
 
 
 
