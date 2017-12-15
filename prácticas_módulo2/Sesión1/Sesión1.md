@@ -1,6 +1,6 @@
-#Sesión 1. Llamadas al sistema para el Sistema de archivos (Parte I)
+# Sesión 1. Llamadas al sistema para el Sistema de archivos (Parte I)
 **Ejercicio 1.** ¿Qué hace el siguiente programa? Probad tras la ejecución del programa las siguientes órdenes del shell: `cat archivo` y `od -c archivo`
-~~~
+~~~c
 /*
 tarea1.c
 Trabajo con llamadas al sistema del Sistema de Archivos ''POSIX 2.10 compliant''
@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
 
   /*Notificamos cuando se escriban en el archivo un número distinto a 10 bytes, que es
   el tamaño del bf1. Esto puede ocurrir por ejemplo si no hay suficiente memoria.
-  Esta llamada escribe los 10 bytes del buffer apuntado por buf1 en el fichero referido
+  Esta llamada escribe los 10 bytes del buffer apuntado por buf1 en el fichero referido.*/
   if(write(fd,buf1,10) != 10) {
     perror("\nError en primer write");
     exit(-1);
@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
   /* Se pone el offset a 40 bytes. Si funciona correctamente devuelve la localización
   del offset en bytes contada desde el principio del archivo. Si se ha producido un error
-  se devuelve -1./
+  se devuelve -1.*/
   if(lseek(fd,40,SEEK_SET) < 0) {
     perror("\nError en lseek");
     exit(-1);
@@ -81,7 +81,7 @@ Bloque 1
 Bloque 2
 // Aquí van los siguientes 80 Bytes del archivo pasado como argumento.
 ...
-~~~
+~~~c
 //File: Ejercicio2-Módulo2.c
 //Authors: Elena Merelo Molina y Antonio Gámiz Delgado
 //Compilation: gcc Ejercicio2-Módulo2.c -o Ejercicio2-Módulo2
@@ -136,11 +136,11 @@ int main(int argc, char *argv[]){
   return 0;
 }
 ~~~
-#####Actividad 3.2. Trabajo con llamadas al sistema de la familia stat.
+##### Actividad 3.2. Trabajo con llamadas al sistema de la familia stat.
 Consulta las llamadas al sistema stat y lstat para entender sus diferencias.
 **La única diferencia entre  `int stat(const char *pathname, struct stat *buf)` e `int lstat(const char *pathname, struct stat *buf)` es que en lstat si se pasa como pathname un enlace simbólico devuelve información sobre el enlace en sí, no sobre el fichero al que se refiere.**
 **Ejercicio 3.** ¿Qué hace el siguiente programa?
-~~~
+~~~c
 /*
 tarea2.c
 Trabajo con llamadas al sistema del Sistema de Archivos ''POSIX 2.10 compliant''
@@ -200,18 +200,7 @@ int main(int argc, char *argv[]){
 
 **Ejercicio 4.** Define una macro en lenguaje C que tenga la misma funcionalidad que la macro `S_ISREG(mode)` usando para ello los flags definidos en `<sys/stat.h>` para el campo `st_mode` de la struct `stat`, y comprueba que funciona en un programa simple. Consulta en un libro de C o en internet cómo se especifica una macro con argumento en C. `#define S_ISREG2(mode) ...`
 *Nota: Puede ser interesante para depurar la ejecución de un programa en C que utilice llamadas al sistema usar la orden strace. Esta orden, en el caso más simple, ejecuta un programa hasta que finalice e intercepta y muestra las llamadas al sistema que realiza el proceso junto con sus argumentos y devuelve los valores devueltos en la salida de error estándar o en un archivo si se especifica la opción -o. Obtén más información con man.*
-~~~
-/*Ejercicio 4. Define una macro en lenguaje C que tenga la misma funcionalidad que la macro
-S_ISREG(mode) usando para ello los flags definidos en <sys/stat.h> para el campo st_mode de
-la struct stat, y comprueba que funciona en un programa simple. Consulta en un libro de C o
-en internet cómo se especifica una macro con argumento en C.
-#define S_ISREG2(mode) ...
-Nota: Puede ser interesante para depurar la ejecución de un programa en C que utilice llamadas
-al sistema usar la orden strace. Esta orden, en el caso más simple, ejecuta un programa hasta
-que finalice e intercepta y muestra las llamadas al sistema que realiza el proceso junto con sus
-argumentos y devuelve los valores devueltos en la salida de error estándar o en un archivo si se
-especifica la opción -o. Obtén más información con man.*/
-
+~~~c
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h> //Por usar stat
@@ -245,7 +234,3 @@ int main(int argc, char* argv[]){
   return 0;
 }
 ~~~
-
-
-
-#

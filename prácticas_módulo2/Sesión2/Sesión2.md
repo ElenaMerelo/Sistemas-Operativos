@@ -154,8 +154,8 @@ ni archivos. Hacemos los punteros constantes para que no se pueda modificar el l
 que apuntan pero sí a lo que apuntan.
 */
 void info_dir(const char *pathname, int * const files, long long int * const total_size){
-  DIR *dir= NULL;
-  struct dirent *dp= NULL;
+  DIR* dir= NULL;
+  struct dirent* dp= NULL;
   struct stat atributes;
 
   dir= opendir(pathname);
@@ -169,8 +169,7 @@ void info_dir(const char *pathname, int * const files, long long int * const tot
   /*Recorremos ahora lo que hay en el directorio
   Con S_IXGRP  comprobamos si el grupo tiene permisos de ejecución
   Con  S_IXOTH comprobamos si otros tienen permiso de ejecución
-  Con S_ISREG(mode) vemos si el archivo es regular, si lo es incrementamos el contado de archivos regulares
-  */
+  Con S_ISREG(mode) vemos si el archivo es regular, si lo es incrementamos el contado de archivos regulares.*/
   while((dp= readdir(dir)) != NULL){
     if(stat(dp->d_name, &atributes) < 0){
       printf("\nError al intentar acceder a los atributos de %s\n", dp->d_name);
@@ -182,8 +181,8 @@ void info_dir(const char *pathname, int * const files, long long int * const tot
         //printf("\n%s es un archivo regular", dp->d_name);
         if(atributes.st_mode & (S_IXGRP | S_IXOTH)){  //Si group y others tienen permiso de ejecución
           printf("\n%s es un archivo regular y tiene permisos de ejecución para others y group", dp->d_name);
-          (*files)++;
-          (*total_size) += atributes.st_size;
+          (* files)++;
+          (* total_size) += atributes.st_size;
           printf("\n Nombre: %s, i-nodo: %d", dp->d_name, dp->d_ino);
           printf("\nNúmero de archivos regulares: %d, total de bytes: %lld", &files, &total_size);
         }
@@ -370,11 +369,3 @@ main() {
   }
 }
 ~~~
-
-
-
-
-
-
-
-#

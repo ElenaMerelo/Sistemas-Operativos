@@ -182,7 +182,13 @@ int main(){
   }
 }
 ~~~
-
+### Actividad 3.2 Trabajo con las llamadas al sistema `wait`, `waitpid` y `exit`
+**Ejercicio 4.** Implementa un programa que lance cinco procesos hijo. Cada uno de ellos se
+identificará en la salida estándar, mostrando un mensaje del tipo Soy el hijo PID. El proceso
+Guía Práctica de Sistemas Operativos-97padre simplemente tendrá que esperar la finalización de todos sus hijos y cada vez que detecte
+la finalización de uno de sus hijos escribirá en la salida estándar un mensaje del tipo:
+Acaba de finalizar mi hijo con <PID>
+Sólo me quedan <NUM_HIJOS> hijos vivos
 
 
 ### Extra
