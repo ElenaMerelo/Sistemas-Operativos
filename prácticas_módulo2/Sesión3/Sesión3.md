@@ -183,16 +183,90 @@ int main(){
 }
 ~~~
 ### Actividad 3.2 Trabajo con las llamadas al sistema `wait`, `waitpid` y `exit`
-**Ejercicio 4.** Implementa un programa que lance cinco procesos hijo. Cada uno de ellos se
-identificará en la salida estándar, mostrando un mensaje del tipo Soy el hijo PID. El proceso
-Guía Práctica de Sistemas Operativos-97padre simplemente tendrá que esperar la finalización de todos sus hijos y cada vez que detecte
-la finalización de uno de sus hijos escribirá en la salida estándar un mensaje del tipo:
+**Ejercicio 4.** Implementa un programa que lance cinco procesos hijo. Cada uno de ellos se identificará en la salida estándar, mostrando un mensaje del tipo Soy el hijo PID. El proceso padre simplemente tendrá que esperar la finalización de todos sus hijos y cada vez que detecte la finalización de uno de sus hijos escribirá en la salida estándar un mensaje del tipo:
 Acaba de finalizar mi hijo con <PID>
 Sólo me quedan <NUM_HIJOS> hijos vivos
++Forma 1:
+**Conforme vamos creando los procesos se van matando, de manera que solo hay un proceso hijo vivo cada vez.**
+~~~c
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
+int main(){
+  int num_processes= 5, status;
+  pid_t child_process;
+
+  for(int i= 0; i< num_processes; i++){
+    if((child_process= fork()) == -1){  //Si no se crea correctamente el hijo imprimimos el correspondiente mensaje de error
+      fprintf(stderr, "\n%s\n", "Error en fork" );
+      exit(EXIT_FAILURE);
+    }
+    if(child_process == 0){ //Si se ha creado correctamente
+      //Parte ejecutada por el proceso hijo
+      fprintf(stdout, "\nSoy el hijo %d con PID %d y PPID %d\n", i, getpid(), getppid());
+      exit(0);
+    }
+
+    else{
+      //Parte ejecutada por el proceso padre
+      child_process = wait(&status);
+      fprintf(stdout, "\nAcaba de finalizar mi hijo con PID %d\n", child_process);
+    }
+  }
+}
+~~~
++Forma 2:
+~~~c
+/*
+Enunciado del ejercicio 4: Implementa un programa que lance cinco procesos hijo. Cada uno
+de ellos se identificará en la salida estándar, mostrando un mensaje del tipo
+Soy el hijo PID.
+El proceso padre simplemente tendrá que esperar la finalización de todos sus hijos y
+cada vez que detecte la finalización de uno de sus hijos escribirá en la salida
+estándar un mensaje del tipo:
+Acaba de finalizar mi hijo con <PID>
+Sólo me quedan <NUM_HIJOS> hijos vivos
+Compilación y enlazado: gcc ejer4.c -o ejer4
+Ejecución: ./ejer4
+Autora: Elena Merelo Molina
+*/
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+
+int main(){
+  int num_processes= 5, status;
+  pid_t child_process;
+
+  for(int i= 0; i< num_processes; i++){
+    if((child_process= fork()) == -1){  //Si no se crea correctamente el hijo imprimimos el correspondiente mensaje de error
+      fprintf(stderr, "\n%s\n", "Error en fork" );
+      exit(EXIT_FAILURE);
+    }
+    if(child_process == 0){ //Si se ha creado correctamente
+      //Parte ejecutada por el proceso hijo
+      fprintf(stdout, "\nSoy el hijo %d con PID %d y PPID %d\n", i, getpid(), getppid());
+      exit(0);
+    }
+  }
+  /*Como hemos creado 5 hijos, iteramos 5 veces sobre wait, cada vez que se detecta que ha acabado uno,
+  informa del PID del hijo que ha acabado e informa de los hijos que quedan vivos. No hace
+  falta comprobar dentro del for if(child_process > 0) al haber puesto exit(0) al crear los procesos hijos.*/
+  for(int i= 4; i>= 0; i--){
+    child_process= wait(&status);
+    printf("\nHa finalizado mi hijo con PID %d", child_process);
+    printf("\nMe quedan %d hijos vivos",i);
+  }
+}
+~~~
 
 ### Extra
-No olvidar:
+> No olvidar:
 ~~~c
 pid = fork(); /* call fork() from parent process*/
 if (0 == pid) {
@@ -205,4 +279,72 @@ else {
 }
 ~~~
 
+##### waitid()
+~~~
+#include <sys/types.h>
+#include <sys/wait.h>
+int waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options);
+waitid()
+       The  waitid()  system  call (available since Linux 2.6.9) provides more
+       precise control over which child state changes to wait for.
+
+       The idtype and id arguments select the child(ren) to wait for, as  follows:
+
+       idtype == P_PID
+              Wait for the child whose process ID matches id.
+
+       idtype == P_PGID
+              Wait for any child whose process group ID matches id.
+
+       idtype == P_ALL
+              Wait for any child; id is ignored.
+
+       The  child state changes to wait for are specified by ORing one or more
+       of the following flags in options:
+
+       WEXITED     Wait for children that have terminated.
+
+       WSTOPPED    Wait for children that have been stopped by delivery  of  a
+                   signal.
+
+       WCONTINUED  Wait  for  (previously  stopped)  children  that  have been
+                   resumed by delivery of SIGCONT.
+
+       The following flags may additionally be ORed in options:
+
+       WNOHANG     As for waitpid().
+
+       WNOWAIT     Leave the child in a waitable state; a later wait call  can
+                   be used to again retrieve the child status information.
+
+Upon  successful  return, waitid() fills in the following fields of the
+       siginfo_t structure pointed to by infop:
+
+       si_pid      The process ID of the child.
+
+       si_uid      The real user ID of the child.  (This field is not  set  on
+                   most other implementations.)
+
+       si_signo    Always set to SIGCHLD.
+
+       si_status   Either  the  exit status of the child, as given to _exit(2)
+                   (or exit(3)), or the signal that caused the child to termi‐
+                   nate,  stop, or continue.  The si_code field can be used to
+                   determine how to interpret this field.
+
+       si_code     Set  to  one  of:  CLD_EXITED  (child   called   _exit(2));
+                   CLD_KILLED  (child  killed  by  signal);  CLD_DUMPED (child
+                   killed by signal,  and  dumped  core);  CLD_STOPPED  (child
+                   stopped by signal); CLD_TRAPPED (traced child has trapped);
+                   or CLD_CONTINUED (child continued by SIGCONT).
+                   waitid():  returns  0  on  success  or  if WNOHANG was specified and no
+       child(ren) specified by id has yet  changed  state;  on  error,  -1  is
+       returned.
+
+       Each  of  these calls sets errno to an appropriate value in the case of
+       an error.
+~~~
+>La orden wait espera a que finalice un hijo. Cuando un hijo termina, se almacena en la variable estado que ha terminado, devoldiendo wait el PID del proceso que ha terminado, para almacenarlo en PID. La orden wait espera a que termine un hijo, mientras no termina, actualizo su estado en la variable estado. Si queremos esperar a un hijo concreto, debemos usar la orden waitpid, que nos permite seleccionar el hijo al que queremos esperar. El uso de wait es equivalente a declarar waitpid de la siguiente manera:
+`waitpid(-1, &estado, 0)`
+Por defecto, waitpid espera a que termine el proceso, especificado mediante su PID, dado en el primer argumento, aunque esto puede modificarse mediante opciones especificadas en el tercer argumento.
 #
