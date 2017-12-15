@@ -132,7 +132,7 @@ for (i=1; i < nprocs; i++) {
 if (!childpid)  //Same as before
   break;
 ~~~
-**Mi versión, comentada: **
+** Mi versión, comentada: **
 ~~~c
 #include <stdlib.h>
 #include <stdio.h>
@@ -186,8 +186,8 @@ int main(){
 **Ejercicio 4.** Implementa un programa que lance cinco procesos hijo. Cada uno de ellos se identificará en la salida estándar, mostrando un mensaje del tipo Soy el hijo PID. El proceso padre simplemente tendrá que esperar la finalización de todos sus hijos y cada vez que detecte la finalización de uno de sus hijos escribirá en la salida estándar un mensaje del tipo:
 Acaba de finalizar mi hijo con <PID>
 Sólo me quedan <NUM_HIJOS> hijos vivos
-+Forma 1:
-**Conforme vamos creando los procesos se van matando, de manera que solo hay un proceso hijo vivo cada vez.**
++ Forma 1: **Conforme vamos creando los procesos se van matando, de manera que solo hay un proceso hijo vivo cada vez.**
+
 ~~~c
 #include <stdlib.h>
 #include <stdio.h>
@@ -218,21 +218,9 @@ int main(){
   }
 }
 ~~~
-+Forma 2:
++ Forma 2: **Se crean cinco hijos, iteramos cinco veces sobre el wait y cada vez que finaliza uno se informa del PID del hijo que ha terminado y de los hijos que quedan vivos.**
+
 ~~~c
-/*
-Enunciado del ejercicio 4: Implementa un programa que lance cinco procesos hijo. Cada uno
-de ellos se identificará en la salida estándar, mostrando un mensaje del tipo
-Soy el hijo PID.
-El proceso padre simplemente tendrá que esperar la finalización de todos sus hijos y
-cada vez que detecte la finalización de uno de sus hijos escribirá en la salida
-estándar un mensaje del tipo:
-Acaba de finalizar mi hijo con <PID>
-Sólo me quedan <NUM_HIJOS> hijos vivos
-Compilación y enlazado: gcc ejer4.c -o ejer4
-Ejecución: ./ejer4
-Autora: Elena Merelo Molina
-*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -259,7 +247,7 @@ int main(){
   falta comprobar dentro del for if(child_process > 0) al haber puesto exit(0) al crear los procesos hijos.*/
   for(int i= 4; i>= 0; i--){
     child_process= wait(&status);
-    printf("\nHa finalizado mi hijo con PID %d", child_process);
+    printf("\nHa finalizado mi hijo con PID %d" , child_process);
     printf("\nMe quedan %d hijos vivos",i);
   }
 }
