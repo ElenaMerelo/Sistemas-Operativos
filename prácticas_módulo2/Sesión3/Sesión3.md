@@ -304,18 +304,51 @@ int main(){
   }
 }
 ~~~
-### Extra
-> No olvidar:
+### Actividad 3.3 Trabajo con la familia de llamadas al sistema exec
+**Ejercicio 6.** ¿Qué hace el siguiente programa?
 ~~~c
-pid = fork(); /* call fork() from parent process*/
-if (0 == pid) {
-  /* fork returned 0. This part will be executed by child process*/
-  /*  getpid() will give child process id here*/
-}
-else {
-  /* fork returned child pid which is non zero. This part will be executed by parent process*/
-  /*  getpid() will give parent process id here */
-}
+/*
+tarea5.c
+Trabajo con llamadas al sistema del Subsistema de Procesos conforme a POSIX 2.10
+*/
+#include<sys/types.h>
+#include<sys/wait.h>
+#include<unistd.h>
+#include<stdio.h>
+#include<errno.h>
+int main(int argc, char *argv[]){
+  pid_t pid;
+  int estado;
+
+  if( (pid=fork())<0) {
+    perror("\nError en el fork");
+    exit(-1);
+  }
+  else if(pid==0) { //proceso hijo ejecutando el programa
+    if( (execl("/usr/bin/ldd","ldd","./tarea5",NULL)<0))
+      perror("\nError en el execl");
+
+    exit(-1);
+  }
+  wait(&estado);
+
+  /*<estado> mantiene información codificada a nivel de bit sobre el motivo de finalización del proceso hijo que puede ser el número de señal o 0 si alcanzó su finalización normalmente.
+  Mediante la variable estado de wait(), el proceso padre recupera el valor especificado por el proceso hijo como argumento de la llamada exit(), pero desplazado 1 byte porque el sistema incluye en el byte menos significativo el código de la señal que puede estar asociada a la terminación del hijo. Por eso se utiliza estado>>8 de forma que obtenemos el valor del argumento de exit() del hijo.*/
+  printf("\nMi hijo %d ha finalizado con el estado %d\n",pid,estado>>8);
+  exit(0);
+  }
+  ### Extra
+  > No olvidar:
+  ~~~c
+  pid = fork(); /* call fork() from parent process*/
+  if (0 == pid) {
+    /* fork returned 0. This part will be executed by child process*/
+    /*  getpid() will give child process id here*/
+  }
+  else {
+    /* fork returned child pid which is non zero. This part will be executed by parent process*/
+    /*  getpid() will give parent process id here */
+  }
 ~~~
 
 ##### waitid()

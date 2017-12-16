@@ -28,20 +28,28 @@ int main(){
   }
   /*Como hemos creado 5 hijos, iteramos 5 veces sobre wait, cada vez que se detecta que ha acabado uno,
   informa del PID del hijo que ha acabado e informa de los hijos que quedan vivos. No hace
-  falta comprobar dentro del for if(child_process > 0) al haber puesto exit(0) al crear los procesos hijos.*/
-  //Esperamos a los hijos impares, que se corresponden con las posiciones pares del vector
+  falta comprobar dentro del for if(child_process > 0) al haber puesto exit(0) al crear los procesos hijos.
+  <status> mantiene información codificada a nivel de bit sobre el motivo de finalización del proceso hijo
+  que puede ser el número de señal o 0 si alcanzó su finalización normalmente.
+  Así, el proceso padre recupera el valor especificado por el proceso hijo como argumento
+  de la llamada exit(), pero desplazado 1 byte porque el sistema incluye en el byte menos
+  significativo el código de la señal que puede estar asociada a la terminación del hijo.
+  Por eso se utiliza status>>8 de forma que obtenemos el valor del argumento de exit() del hijo.*/
+
+  //Esperamos a los hijos impares, que se corresponden con las posiciones pares del vector.
   for(int i= 0; i< 5; i++){
     if(i%2 == 0){
       waitpid(children[i], &status, 0);
-      printf("\nHa finalizado mi hijo con PID %d y estado %d\n", children[i], status);
+      printf("\nHa finalizado mi hijo con PID %d y estado %d\n", children[i], status>>8);
       printf("\nMe quedan %d hijos vivos, éste es el hijo %d\n", --num_processes, i+1);
     }
   }
+
+  //Esperamos a los hijos pares, que se corresponden con las posiciones impares del vector
   for(int i= 0; i< 5; i++){
-    //Esperamos a los hijos pares, que se corresponden con las posiciones impares del vector
     if(i%2 != 0){
       waitpid(children[i], &status, 0);
-      printf("\nHa finalizado mi hijo con PID %d y estado %d\n", children[i], status);
+      printf("\nHa finalizado mi hijo con PID %d y estado %d\n", children[i], status>>8);
       printf("\nMe quedan %d hijos vivos, éste es el hijo %d\n", --num_processes, i+1);
     }
   }
