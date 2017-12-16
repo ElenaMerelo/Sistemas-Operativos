@@ -255,13 +255,6 @@ int main(){
 **Ejercicio 5.** Implementa una modificación sobre el anterior programa en la que el proceso padre espera primero a los hijos creados en orden impar (1º,3º,5º) y después a los hijos pares (2º
 y 4º).
 ~~~c
-/*Ejercicio 5. Implementa una modificación sobre el anterior programa en la que el proceso
-padre espera primero a los hijos creados en orden impar (1º,3º,5º) y después a los hijos pares (2º
-y 4º).
-Compilación y enlazado: gcc ejer5.c -o ejer5
-Ejecución: ./ejer5
-Autora: Elena Merelo Molina
-*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -305,7 +298,7 @@ int main(){
 }
 ~~~
 ### Actividad 3.3 Trabajo con la familia de llamadas al sistema exec
-**Ejercicio 6.** ¿Qué hace el siguiente programa? **En éste programa es el proceso hijo el que ejecuta el programa, imprimiendo con ldd las bibliotecas dinámicas requeridas por cada programa pasado como argumento, en este caso el propio. LO vemos comentado:**
+**Ejercicio 6.** ¿Qué hace el siguiente programa? **En éste programa es el proceso hijo el que ejecuta el programa, imprimiendo con ldd las bibliotecas dinámicas requeridas por cada programa pasado como argumento, en este caso el propio. Lo vemos comentado:**
 ~~~c
 /*
 tarea5.c
@@ -346,20 +339,129 @@ int main(int argc, char *argv[]){
   exit(0);
 }
 ~~~
+**Ejercicio 7.** Escribe un programa que acepte como argumentos el nombre de un programa, sus argumentos si los tiene, y opcionalmente la cadena “bg”. Nuesto programa deberá ejecutar el programa pasado como primer argumento en foreground si no se especifica la cadena “bg” y en background en caso contrario. Si el programa tiene argumentos hay que ejecutarlo con éstos.
+~~~c
+//File: ejer7.c
+#include <unistd.h> //Para usar la familia de funciones exec()
+#include <string.h> //Para usar strcmp
+#include <stdio.h>  //Para usar la familia de funciones printf()
+#include <stdlib.h> //Para exit()
 
+int main(int argc, char *argv[]){
+  int i, j= 0, status, child_process, exec_foreground= 1; //Partimos de que el programa se ejecuta en el foreground
 
-  ### Extra
-  > No olvidar:
-  ~~~c
-  pid = fork(); /* call fork() from parent process*/
-  if (0 == pid) {
-    /* fork returned 0. This part will be executed by child process*/
-    /*  getpid() will give child process id here*/
+  if(argc < 2){
+    fprintf(stderr, "%s\n", "Como mínimo ha de introducir el nombre del programa");
+    exit(EXIT_FAILURE);
   }
-  else {
-    /* fork returned child pid which is non zero. This part will be executed by parent process*/
-    /*  getpid() will give parent process id here */
+
+  /*Vamos recorriendo los argumentos del programa, y si alguno de ellos es la cadena "bg"
+  ponemos exec_foreground a false, ya que se ejecutará el programa pasado como primer
+  argumento en background.*/
+  for(i= 1; i< argc && exec_foreground; i++){
+    if(strcmp(argv[i], "bg") == 0)
+      exec_foreground= 0;
   }
+
+  if((child_process= fork()) == 0){ //Parte ejecutada por el hijo
+    //Creamos un vector equivalente a char* argv[] pero sin el argumento bg ni argv[0]
+    char* argv_2[argc+1];
+    for(i= 0; i< argc-1; i++){
+      if(strcmp(argv[i], "bg") != 0)
+        argv_2[j]= argv[i+1];
+
+      j++;
+    }
+    /*Condición necesaria para que funcionen las funciones exec(), que el vector
+    con los argumentos del programa acabe con NULL y empiece con el archivo que
+    va a ser ejecutado.*/
+    argv_2[j]= NULL;
+
+    if(execv(argv[1], argv_2) == -1){
+      fprintf(stderr, "%s\n", "Error %d en execv");
+      exit(EXIT_FAILURE);
+    }
+  }
+  //Part ejecutada por el padre
+  else{
+    printf("Soy el proceso padre y mi pid es: %d\n", getpid());
+
+    /*Si el último argumento no es *bg*, se ejecuta en primer plano, por lo
+    que el padre se espera al hijo.* /
+    if(exec_foreground)
+      waitpid(child_process,&status,0);
+  }
+}
+~~~
+**Otra forma de hacer el programa, suponiendo que bg se pone al final sería la siguiente. La anterior forma no siempre funciona, pero ésta sí**
+~~~c
+//File: ejer_2.c
+/*Enunciado: Escribe un programa que acepte como argumentos el nombre de un programa,
+sus argumentos si los tiene, y opcionalmente la cadena “bg”. Nuesto programa
+deberá ejecutar el programa pasado como primer argumento en foreground si no se
+especifica la cadena “bg” y en background en caso contrario. Si el programa
+tiene argumentos hay que ejecutarlo con éstos.
+Compilación y enlazado: gcc ejer7.c -o ejer7
+Ejecución: ./ejer7 nombre_programa [argumentos]
+Autora: Elena Merelo Molina
+*/
+
+#include <unistd.h> //Para usar la familia de funciones exec()
+#include <string.h> //Para usar strcmp
+#include <stdio.h>  //Para usar la familia de funciones printf()
+#include <stdlib.h> //Para exit()
+
+int main(int argc, char *argv[]){
+  int i, j= 0, status, child_process, exec_foreground= 1; //Partimos de que el programa se ejecuta en el foreground
+  int num_arguments= argc;
+
+  if(argc < 2){
+    fprintf(stderr, "%s\n", "Como mínimo ha de introducir el nombre del programa");
+    exit(EXIT_FAILURE);
+  }
+
+  /*Si el último argumento es la cadena "bg" ponemos exec_foreground a false,
+  ya que se ejecutará el programa pasado como primer argumento en background.*/
+  if(strcmp(argv[argc-1], "bg") == 0){
+    num_arguments= argc-1;
+    exec_foreground= 0;
+  }
+
+  if((child_process= fork()) == 0){ //Parte ejecutada por el hijo
+    //Creamos un vector equivalente a char *argv[] pero sin el argumento bg ni argv[0]
+    char* argv_2[num_arguments];
+    for(i= 0; i< num_arguments-1; i++)
+        argv_2[i]= argv[i+1];
+    argv_2[num_arguments-1]= NULL;
+
+    if(execv(argv[1], argv_2) == -1){
+      fprintf(stderr, "%s\n", "Error %d en execv");
+      exit(EXIT_FAILURE);
+    }
+  }
+  //Part ejecutada por el padre
+  else{
+    printf("Soy el proceso padre y mi pid es: %d\n", getpid());
+
+    /*Si el último argumento no es *bg*, se ejecuta en primer plano, por lo
+    que el padre se espera al hijo.* /
+    if(exec_foreground)
+      waitpid(child_process,&status,0);
+  }
+}
+~~~
+### Extra
+> No olvidar:
+~~~c  
+pid = fork(); /* call fork() from parent process*/
+if (0 == pid) {
+  /* fork returned 0. This part will be executed by child process*/
+  /*  getpid() will give child process id here*/
+}
+else {
+  /* fork returned child pid which is non zero. This part will be executed by parent process*/
+  /*  getpid() will give parent process id here */
+}
 ~~~
 
 ##### waitid()
@@ -368,64 +470,64 @@ int main(int argc, char *argv[]){
 #include <sys/wait.h>
 int waitid(idtype_t idtype, id_t id, siginfo_t *infop, int options);
 waitid()
-       The  waitid()  system  call (available since Linux 2.6.9) provides more
-       precise control over which child state changes to wait for.
+     The  waitid()  system  call (available since Linux 2.6.9) provides more
+     precise control over which child state changes to wait for.
 
-       The idtype and id arguments select the child(ren) to wait for, as  follows:
+     The idtype and id arguments select the child(ren) to wait for, as  follows:
 
-       idtype == P_PID
-              Wait for the child whose process ID matches id.
+     idtype == P_PID
+            Wait for the child whose process ID matches id.
 
-       idtype == P_PGID
-              Wait for any child whose process group ID matches id.
+     idtype == P_PGID
+            Wait for any child whose process group ID matches id.
 
-       idtype == P_ALL
-              Wait for any child; id is ignored.
+     idtype == P_ALL
+            Wait for any child; id is ignored.
 
-       The  child state changes to wait for are specified by ORing one or more
-       of the following flags in options:
+     The  child state changes to wait for are specified by ORing one or more
+     of the following flags in options:
 
-       WEXITED     Wait for children that have terminated.
+     WEXITED     Wait for children that have terminated.
 
-       WSTOPPED    Wait for children that have been stopped by delivery  of  a
-                   signal.
+     WSTOPPED    Wait for children that have been stopped by delivery  of  a
+                 signal.
 
-       WCONTINUED  Wait  for  (previously  stopped)  children  that  have been
-                   resumed by delivery of SIGCONT.
+     WCONTINUED  Wait  for  (previously  stopped)  children  that  have been
+                 resumed by delivery of SIGCONT.
 
-       The following flags may additionally be ORed in options:
+     The following flags may additionally be ORed in options:
 
-       WNOHANG     As for waitpid().
+     WNOHANG     As for waitpid().
 
-       WNOWAIT     Leave the child in a waitable state; a later wait call  can
-                   be used to again retrieve the child status information.
+     WNOWAIT     Leave the child in a waitable state; a later wait call  can
+                 be used to again retrieve the child status information.
 
 Upon  successful  return, waitid() fills in the following fields of the
-       siginfo_t structure pointed to by infop:
+     siginfo_t structure pointed to by infop:
 
-       si_pid      The process ID of the child.
+     si_pid      The process ID of the child.
 
-       si_uid      The real user ID of the child.  (This field is not  set  on
-                   most other implementations.)
+     si_uid      The real user ID of the child.  (This field is not  set  on
+                 most other implementations.)
 
-       si_signo    Always set to SIGCHLD.
+     si_signo    Always set to SIGCHLD.
 
-       si_status   Either  the  exit status of the child, as given to _exit(2)
-                   (or exit(3)), or the signal that caused the child to termi‐
-                   nate,  stop, or continue.  The si_code field can be used to
-                   determine how to interpret this field.
+     si_status   Either  the  exit status of the child, as given to _exit(2)
+                 (or exit(3)), or the signal that caused the child to termi‐
+                 nate,  stop, or continue.  The si_code field can be used to
+                 determine how to interpret this field.
 
-       si_code     Set  to  one  of:  CLD_EXITED  (child   called   _exit(2));
-                   CLD_KILLED  (child  killed  by  signal);  CLD_DUMPED (child
-                   killed by signal,  and  dumped  core);  CLD_STOPPED  (child
-                   stopped by signal); CLD_TRAPPED (traced child has trapped);
-                   or CLD_CONTINUED (child continued by SIGCONT).
-                   waitid():  returns  0  on  success  or  if WNOHANG was specified and no
-       child(ren) specified by id has yet  changed  state;  on  error,  -1  is
-       returned.
+     si_code     Set  to  one  of:  CLD_EXITED  (child   called   _exit(2));
+                 CLD_KILLED  (child  killed  by  signal);  CLD_DUMPED (child
+                 killed by signal,  and  dumped  core);  CLD_STOPPED  (child
+                 stopped by signal); CLD_TRAPPED (traced child has trapped);
+                 or CLD_CONTINUED (child continued by SIGCONT).
+                 waitid():  returns  0  on  success  or  if WNOHANG was specified and no
+     child(ren) specified by id has yet  changed  state;  on  error,  -1  is
+     returned.
 
-       Each  of  these calls sets errno to an appropriate value in the case of
-       an error.
+     Each  of  these calls sets errno to an appropriate value in the case of
+     an error.
 ~~~
 >La orden wait espera a que finalice un hijo. Cuando un hijo termina, se almacena en la variable estado que ha terminado, devoldiendo wait el PID del proceso que ha terminado, para almacenarlo en PID. La orden wait espera a que termine un hijo, mientras no termina, actualizo su estado en la variable estado. Si queremos esperar a un hijo concreto, debemos usar la orden waitpid, que nos permite seleccionar el hijo al que queremos esperar. El uso de wait es equivalente a declarar waitpid de la siguiente manera:
 `waitpid(-1, &estado, 0)`
