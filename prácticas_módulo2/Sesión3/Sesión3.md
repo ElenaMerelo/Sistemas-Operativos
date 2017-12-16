@@ -305,7 +305,7 @@ int main(){
 }
 ~~~
 ### Actividad 3.3 Trabajo con la familia de llamadas al sistema exec
-**Ejercicio 6.** ¿Qué hace el siguiente programa?
+**Ejercicio 6.** ¿Qué hace el siguiente programa? **En éste programa es el proceso hijo el que ejecuta el programa, imprimiendo con ldd las bibliotecas dinámicas requeridas por cada programa pasado como argumento, en este caso el propio. LO vemos comentado:**
 ~~~c
 /*
 tarea5.c
@@ -325,18 +325,29 @@ int main(int argc, char *argv[]){
     exit(-1);
   }
   else if(pid==0) { //proceso hijo ejecutando el programa
-    if( (execl("/usr/bin/ldd","ldd","./tarea5",NULL)<0))
+    //Ejecuta desde /usr/bin/ldd el programa tarea5, mostrando con ldd las bibliotecas dinámicas que precisa
+    if((execl("/usr/bin/ldd","ldd","./tarea5",NULL)<0)){
       perror("\nError en el execl");
-
-    exit(-1);
+      exit(-1);
+    }
   }
+  //El proceso padre espera a que el estado del hijo cambie
   wait(&estado);
 
-  /*<estado> mantiene información codificada a nivel de bit sobre el motivo de finalización del proceso hijo que puede ser el número de señal o 0 si alcanzó su finalización normalmente.
-  Mediante la variable estado de wait(), el proceso padre recupera el valor especificado por el proceso hijo como argumento de la llamada exit(), pero desplazado 1 byte porque el sistema incluye en el byte menos significativo el código de la señal que puede estar asociada a la terminación del hijo. Por eso se utiliza estado>>8 de forma que obtenemos el valor del argumento de exit() del hijo.*/
-  printf("\nMi hijo %d ha finalizado con el estado %d\n",pid,estado>>8);
+  /*<estado> mantiene información codificada a nivel de bit sobre el motivo de
+  finalización del proceso hijo que puede ser el número de señal o 0 si alcanzó
+  su finalización normalmente. Mediante la variable estado de wait(), el proceso
+  padre recupera el valor especificado por el proceso hijo como argumento de la
+  llamada exit(), pero desplazado 1 byte porque el sistema incluye en el byte
+  menos significativo el código de la señal que puede estar asociada a la terminación
+  del hijo. Por eso se utiliza estado>>8, de forma que obtenemos el valor del argumento
+  de exit() del hijo.*/
+  printf("\nMi hijo %d ha finalizado con el estado %d\n", pid, estado>>8);
   exit(0);
-  }
+}
+~~~
+
+
   ### Extra
   > No olvidar:
   ~~~c
