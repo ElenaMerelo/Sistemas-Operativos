@@ -532,4 +532,8 @@ Upon  successful  return, waitid() fills in the following fields of the
 >La orden wait espera a que finalice un hijo. Cuando un hijo termina, se almacena en la variable estado que ha terminado, devoldiendo wait el PID del proceso que ha terminado, para almacenarlo en PID. La orden wait espera a que termine un hijo, mientras no termina, actualizo su estado en la variable estado. Si queremos esperar a un hijo concreto, debemos usar la orden waitpid, que nos permite seleccionar el hijo al que queremos esperar. El uso de wait es equivalente a declarar waitpid de la siguiente manera:
 `waitpid(-1, &estado, 0)`
 Por defecto, waitpid espera a que termine el proceso, especificado mediante su PID, dado en el primer argumento, aunque esto puede modificarse mediante opciones especificadas en el tercer argumento.
+
+
+**Crear un hilo:** Para ello usamos `clone()` con los siguientes indicadores:
+`CLONE_VM|CLONE_FILES|CLONE_FS|CLONE_THREAD|CLONE_SIGHAND`. Con ello, el hijo comparte con su padre la memoria virtual, los archivos abiertos, el directorio raíz, el directorio de trabajo y la máscara de creación de archivos, pone al hijo en el mismo grupo del padre, y comparten los manejadores de señales.
 #
