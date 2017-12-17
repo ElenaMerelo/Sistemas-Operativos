@@ -123,10 +123,97 @@ int main(int argc, char *argv[]){
   return(0);
 }
 ~~~
+**Ejercicio 3.** Redirigiendo las entradas y salidas estándares de los procesos a los cauces podemos escribir un programa en lenguaje C que permita comunicar órdenes existentes sin necesidad de reprogramarlas, tal como hace el shell (por ejemplo ls | sort). En particular, ejecute el siguiente programa que ilustra la comunicación entre proceso padre e hijo a través de un cauce sin nombre redirigiendo la entrada estándar y la salida estándar del padre y el hijo respectivamente.**Ejecutamos(`./tarea7`) tras haber compilado y enlazado con `gcc tarea7.c -o tarea7` y vemos como en efecto resulta lo mismo que al poner `ls|sort`**
+~~~c
+/*
+tarea7.c
+Programa ilustrativo del uso de pipes y la redirección de entrada y
+salida estándar: "ls | sort"
+*/
+#include<sys/types.h>
+#include<fcntl.h>
+#include<unistd.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<errno.h>
+int main(int argc, char *argv[]){
+  int fd[2];
+  pid_t PID;
+  pipe(fd); // Llamada al sistema para crear un pipe
+  if ( (PID= fork())<0) {
+    perror("fork");
+    exit(-1);
+  }
+  if(PID == 0) { // ls
+    //Establecemos la dirección del flujo de datos en el cauce cerrando
+    // el descriptor de lectura de cauce en el proceso hijo
+    close(fd[0]); //Así, redirigimos la salida estándar para enviar datos al cauce
 
+    //Cerramos la salida estándar del proceso hijo
+    close(STDOUT_FILENO);
+    //Duplicamos el descriptor de escritura en cauce en el descriptor
+    //correspondiente a la salida estándar (stdout)
+    dup(fd[1]);
+    execlp("ls","ls",NULL);
+  }
+  else { // sort. Estamos en el proceso padre porque PID != 0
+    //Se establece la dirección del flujo de datos en el cauce cerrando
+    // el descriptor de escritura en el cauce del proceso padre.
+    close(fd[1]);
+    //Redirigimos la entrada estándar para tomar los datos del cauce.
+    //Cerramos la entrada estándar del proceso padre
+    close(STDIN_FILENO);
+    //Duplicamos el descriptor de lectura de cauce en el descriptor
+    //correspondiente a la entrada estándar (stdin)
+    dup(fd[0]);
+    execlp("sort","sort",NULL);
+  }
+  return(0);
+}
+~~~
+**Ejercicio 4.** Compare el siguiente programa con el anterior y ejecútelo. Describa la principal diferencia, si existe, tanto en su código como en el resultado de la ejecución.**Al ejecutar el programa resulta lo mismo que el anterior, la única diferencia es que en vez de usar `close(STDOUT_FILENO)` o `close(STDIN_FILENO)` emplea `dup2(fd[1], STDOUT_FILENO)` o `dup2(fd[1], STDIN_FILENO)` respectivamente, pero es que son equivalentes ambas cosas; la cabecera de dup2 es `int dup2(int oldfd, int newfd)`, crea una copia de oldfd usando el número especificado en newfd. Si newfd había sido abierto con anterioridad, se cierra antes de volver a ser usado. Por otro lado, close() cierra un descriptor de archivo, de manera que no se refiera a ningún archivo y pueda volver a ser usado.**
+~~~c
+/*
+tarea8.c
+Programa ilustrativo del uso de pipes y la redirección de entrada y
+salida estándar: "ls | sort", utilizando la llamada dup2.
+*/
+#include<sys/types.h>
+#include<fcntl.h>
+#include<unistd.h>
+#include<stdio.h>
+#include<stdlib.h>
+#include<errno.h>
+int main(int argc, char *argv[]){
+  int fd[2];
+  pid_t PID;
+  pipe(fd); // Llamada al sistema para crear un pipe
+  if ( (PID= fork())<0) {
+    perror("\Error en fork");
+    exit(-1);
+  }
 
-
-
+  if (PID == 0) { // ls
+    //Cerrar el descriptor de lectura de cauce en el proceso hijo
+    close(fd[0]);
+    //Duplicar el descriptor de escritura en cauce en el descriptor
+    //correspondiente a la salida estda r (stdout), cerrado previamente en
+    //la misma operación
+    dup2(fd[1],STDOUT_FILENO);
+    execlp("ls","ls",NULL);
+  }
+  else { // sort. Proceso padre porque PID != 0.
+    //Cerrar el descriptor de escritura en cauce situado en el proceso padre
+    close(fd[1]);
+    //Duplicar el descriptor de lectura de cauce en el descriptor
+    //correspondiente a la entrada estándar (stdin), cerrado previamente en
+    //la misma operación
+    dup2(fd[0],STDIN_FILENO);
+    execlp("sort","sort",NULL);
+  }
+  return(0);
+}
+~~~
 
 
 ### Extra
