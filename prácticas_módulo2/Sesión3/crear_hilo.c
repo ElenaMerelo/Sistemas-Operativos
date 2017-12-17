@@ -28,8 +28,7 @@ int main() {
   if (!stack)
     return -1;
 
-  i = clone(thread, (char*) stack + 15000, CLONE_VM|CLONE_FILES|CLONE_FS|
-  CLONE_THREAD|CLONE_SIGHAND, NULL);
+  i = clone(thread, (char*) stack + 15000, CLONE_VM|CLONE_FILES|CLONE_FS|CLONE_THREAD|CLONE_SIGHAND, NULL);
   sleep(5);
 
   if (i == -1)  //clone devuelve -1 si se ha producido algún error
