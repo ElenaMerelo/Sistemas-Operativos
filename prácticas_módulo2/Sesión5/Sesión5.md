@@ -108,7 +108,12 @@ int main(int argc, char *argv[]){
   }
   for(;;){ }  //equivalente a while(1)
 }
-
+~~~
+**Este segundo programa recibe la señal mandada por send_signal, al ejecutar de la siguiente manera:
++ Abrimos dos terminales en la carpeta donde tengamos ambos programas.
++ Los compilamos y enlazamos (`gcc send_signal.c -o send_signal` y `gcc get_signal.c -o get_signal`).
++ En uno de los terminales ponemos a ejecutar get_signal(`./get_signal`). Se quedará en bucle infinito de comprobación hasta que reciba una señal.
++ Desde el terminal restante escribimos `ps -ef | grep get_signal`, para saber el PID del programa, y ejecutamos `./send_signal [0, 1 ó 2] PID_obtenido`, recibiendo ya una señal get_signal. No finalizará get_signal hasta que ejecutemos con la opción 0.**
 
 
 
