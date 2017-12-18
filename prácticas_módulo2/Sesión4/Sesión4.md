@@ -220,6 +220,7 @@ El ejercicio concreto a programar consistirá en el cálculo de los números pri
 creciente.
 2. El programa esclavo tiene como argumentos el extremo inferior y superior del intervalo sobre el que buscará números primos. Para identificar un número primo utiliza el siguiente método concreto: un número n es primo si no es divisible por ningún k tal que 2 < k <= sqrt(n), donde sqrt corresponde a la función de cálculo de la raíz cuadrada. El esclavo envía al maestro cada primo
 encontrado como un dato entero (4 bytes) que escribe en la salida estándar, la cuál se tiene que encontrar redireccionada a un cauce sin nombre. Los dos cauces sin nombre necesarios, cada uno para comunicar cada esclavo con el maestro, los creará el maestro inicialmente. Una vez que un esclavo haya calculado y enviado (uno a uno) al maestro todos los primos en su correspondiente intervalo terminará.**Compilamos y enlazamos uno a uno los programas: `gcc maestro.c -o maestro`, luego `gcc esclavo.c -o esclavo -lm` (se pone -lm para resolver referencias a la función sqrt incluida en math.h). He revisado mis programas y devuelven bien los primos, pero meten basura y no sé como solucionarlo. Aparte de eso creo que están correctos.**
+
 ~~~c
 //maestro.c
 
