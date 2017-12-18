@@ -139,7 +139,7 @@ int main(int argc, char *argv[]){
   //Informamos de las señales que no podemos manejar
   printf("\nNo puedo manejar la señal %d", SIGKILL);
   printf("\nNo puedo manejar la señal %d", SIGSTOP);
-  printf("\nEsperando el envío de señales...");
+  printf("\nEsperando el envío de señales...\n");
 
   //Para que escriba en la salida estándar sin buffering
   if(setvbuf(stdout,NULL,_ IONBF,0))
@@ -154,12 +154,50 @@ int main(int argc, char *argv[]){
   while(1); //Para que siga ejecutándose hasta que reciba una señal que termine el proceso
 }
 ~~~
+**Parece que funciona más o menos bien, pero no termina nunca, se queda siempre en bucle infinito y no he encontrado ningna versión de este programa resuelto que lo solucione. Para terminar el proceso, abrir otra terminal, y buscar el PID del proceso con `ps -ef|grep contador`, siendo contador el nombre de mi ejecutable, y luego escribiendo `kill -p *PID*` matamos al proceso, sino el procesador empieza a sobrecalentarse.**
 
+### Actividad 5.2. Trabajo con las llamadas al sistema sigsuspend y sigprocmask
 
+**Ejercicio 3.** Escribe un programa que suspenda la ejecución del proceso actual hasta que se reciba la señal SIGUSR1.
+~~~c
+//Escribe un programa que suspenda la ejecución del proceso actual hasta que se reciba la señal SIGUSR1.
+
+#include <signal.h>
+#include <stdio.h>
+
+int main(){
+  sigset_t new_mask;
+
+  //Inicializamos la nueva máscara de señales a todas las posibles
+  sigfillset(&new_mask);
+
+  //Eliminamos del conjunto la señal SIGUSR1
+  sigdelset(&new_mask, SIGUSR1);
+
+  /*Espera a la señal SIGUSR1, ya que realmente está esperando a todas las señales
+  excepto las del set, que son todas menos SIGUSR1.*/
+  sigsuspend(&new_mask);
+
+}
+~~~
 
 
 
 ### Extra:
+En el siguiente ejemplo se suspende la ejecución del proceso actual hasta que reciba una señal distinta de SIGUSR1.
+~~~c
+//tarea11.c
+#include <stdio.h>
+#include <signal.h>
+int main(){
+  sigset_t new_mask;
+  /*inicializar la nueva mascara de señales*/
+  sigemptyset(&new_mask);
+  sigaddset(&new_mask, SIGUSR1);
+  /*esperar a cualquier señal excepto SIGUSR1*/
+  sigsuspend(&new_mask);
+}
+~~~
 **sigwait(3)**
 ~~~
 The  sigwait()  function suspends execution of the calling thread until
@@ -219,6 +257,8 @@ ERRORS
        to  void *)  as  its  third  argument.  (Commonly, the handler function
        doesn't make any use of the third argument.  See getcontext(3) for fur‐
        ther information about ucontext_t.)*
+
+> sigaction puede llamarse con un segundo argumento nulo para conocer el manejador de señal en curso. También puede emplearse para comprobar si una señal dada es válida para la máquina donde está, llamándola con el segundo y el tercer argumento nulos.
 
 Los siguientes ejemplos ilustran el uso de la llamada al sistema sigaction para establecer un manejador para la señal SIGINT que se genera cuando se pulsa <CTRL+C>.
 ~~~c
