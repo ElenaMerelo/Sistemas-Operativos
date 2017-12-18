@@ -30,7 +30,6 @@ int main(int argc, char *argv[]){
     la salida estándar, la cual se encuentra ya redireccionada a un cauce sin nombre,
     creado por el maestro.*/
     if(is_prime(i)){
-      printf("\nEl número %d es primo\n", i);
       write(STDOUT_FILENO, &i, sizeof(int));
     }
   }
