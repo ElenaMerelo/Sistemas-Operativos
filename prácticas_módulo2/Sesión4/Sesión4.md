@@ -321,11 +321,10 @@ int main(int argc, char *argv[]){
 
   //return(EXIT_SUCCESS);
 }
+~~~
 ~~~c
-/*Compilación y enlazado: gcc esclavo.c -o esclavo -lm
-Se ejecuta el programa principal, maestro.c
-Autora: Elena Merelo Molina
-*/
+//esclavo.c
+
 #include <stdio.h>  //familia de funciones printf()
 #include <stdlib.h> //exit(), atoi
 #include <math.h>   //necesita -lm al enlazar
@@ -353,13 +352,13 @@ int main(int argc, char *argv[]){
     /*Enviamos cada primo encontrado al maestro como un entero que escribe en
     la salida estándar, la cual se encuentra ya redireccionada a un cauce sin nombre,
     creado por el maestro.*/
-    if(is_prime(i))
+    if(is_prime(i)){
+      printf("\nEl número %d es primo\n", i);
       write(STDOUT_FILENO, &i, sizeof(int));
-    
+    }
   }
   exit(0);
 }
-
 ~~~
 ### Extra
 > **Creación de cauces**
