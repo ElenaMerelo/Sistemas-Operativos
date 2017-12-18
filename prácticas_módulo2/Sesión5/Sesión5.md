@@ -115,13 +115,111 @@ int main(int argc, char *argv[]){
 + En uno de los terminales ponemos a ejecutar get_signal(`./get_signal`). Se quedará en bucle infinito de comprobación hasta que reciba una señal.
 + Desde el terminal restante escribimos `ps -ef | grep get_signal`, para saber el PID del programa, y ejecutamos `./send_signal [0, 1 ó 2] PID_obtenido`, recibiendo ya una señal get_signal. No finalizará get_signal hasta que ejecutemos con la opción 0.**
 
+**Ejercicio 2.** Escribe un programa en C llamado contador, tal que cada vez que reciba una señal que se pueda manejar, muestre por pantalla la señal y el número de veces que se ha recibido ese tipo de señal, y un mensaje inicial indicando las señales que no puede manejar. En el cuadro siguiente se muestra un ejemplo de ejecución del programa.
+~~~c
 
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+/*Vector en el que iremos almacenando las veces que aparece una señal. Le ponemos
+ese tamaño ya que hay 27 señales, desde la 1 a la 27.*/
+int number_of_times[28]= {0};
+
+static void signal_handler(int signum){
+  number_of_times[signum]++;
+  printf("\nLa señal %d se ha recibido %d veces\n", signum, number_of_times[signum]);
+  signal(signum, SIG_IGN);  //Ignora así la señal que recibe, solo cuenta el número de veces que se ha invocado
+}
+
+int main(int argc, char *argv[]){
+
+  //Informamos de las señales que no podemos manejar
+  printf("\nNo puedo manejar la señal %d", SIGKILL);
+  printf("\nNo puedo manejar la señal %d", SIGSTOP);
+  printf("\nEsperando el envío de señales...");
+
+  //Para que escriba en la salida estándar sin buffering
+  if(setvbuf(stdout,NULL,_ IONBF,0))
+    perror("\nError en setvbuf");
+
+  for(int i= 0; i< 28; i++){
+    if(signal(i, signal_handler) < 0){
+      printf("\nNo puedo manejar la señal %d\n", i);
+      exit(EXIT_FAILURE);
+    }
+  }
+  while(1); //Para que siga ejecutándose hasta que reciba una señal que termine el proceso
+}
+~~~
 
 
 
 
 
 ### Extra:
+**sigwait(3)**
+~~~
+The  sigwait()  function suspends execution of the calling thread until
+       one of the signals specified in the signal  set  set  becomes  pending.
+       The  function  accepts  the signal (removes it from the pending list of
+       signals), and returns the signal number in sig.
+
+       The operation of sigwait() is the same as sigwaitinfo(2), except that:
+
+       * sigwait() returns only the signal number,  rather  than  a  siginfo_t
+         structure describing the signal.
+
+       * The return values of the two functions are different.
+~~~
+**sigwaitinfo(2)**
+~~~
+#include <signal.h>
+
+       int sigwaitinfo(const sigset_t *set, siginfo_t *info);
+sigwaitinfo() suspends execution of the calling thread until one of the signals  in  set  is  pending  (If one of the signals in set is already pending for the calling thread, sigwaitinfo() will return immediately.)
+
+sigwaitinfo() removes the signal from the set of  pending  signals  and returns the signal number as its function result.  If the info argument is not NULL, then the buffer that it points to  is  used  to  return  a structure  of  type siginfo_t (see sigaction(2)) containing information about the signal.
+
+If multiple signals in set are pending for the caller, the signal  that is  retrieved  by  sigwaitinfo()  is  determined according to the usual ordering rules; see signal(7) for further details.
+
+siginfo_t {
+               int      si_signo;     /* Signal number */
+               int      si_errno;     /* An errno value */
+               int      si_code;      /* Signal code */
+               int      si_trapno;    /* Trap number that caused
+                                         hardware-generated signal
+                                         (unused on most architectures) */
+               pid_t    si_pid;       /* Sending process ID */
+               uid_t    si_uid;       /* Real user ID of sending process */
+               int      si_status;    /* Exit value or signal */
+               clock_t  si_utime;     /* User time consumed */
+               clock_t  si_stime;     /* System time consumed */
+               sigval_t si_value;     /* Signal value */
+               int      si_int;       /* POSIX.1b signal */
+On success, sigwaitinfo() returns a signal  number. On failure both it returns -1, with errno set to indicate the error.
+
+RETURN VALUE
+       sigaction() returns 0 on success; on error, -1 is returned,  and  errno
+       is set to indicate the error.
+
+ERRORS
+       EFAULT act  or oldact points to memory which is not a valid part of the
+              process address space.
+
+       EINVAL An invalid signal was specified.  This will also be generated if an  attempt is made to change the action for SIGKILL or SIGSTOP, which cannot be caught or ignored.
+
+~~~
+*If  SA_SIGINFO  is specified in sa_flags, then sa_sigaction (instead of
+       sa_handler) specifies the signal-handling function  for  signum.   This
+       function receives the signal number as its first argument, a pointer to
+       a siginfo_t as its second argument and a pointer to a ucontext_t  (cast
+       to  void *)  as  its  third  argument.  (Commonly, the handler function
+       doesn't make any use of the third argument.  See getcontext(3) for fur‐
+       ther information about ucontext_t.)*
+
 Los siguientes ejemplos ilustran el uso de la llamada al sistema sigaction para establecer un manejador para la señal SIGINT que se genera cuando se pulsa <CTRL+C>.
 ~~~c
 // tarea9.c
