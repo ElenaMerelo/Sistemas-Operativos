@@ -21,11 +21,14 @@ static void signal_handler(int signum){
   if(signum == SIGPIPE)
     printf("\nBroken pipe: write to pipe with no readers\n");
 }
+
+int SIZE= 256;
+
 int main(){
-  int fd[2];
+  int fd[2], num_bytes;
   pid_t child_process;
   char buffer[100];
-  struct stat atributes, atributes_buffer;
+  struct stat attributes, attributes_buffer;
   DIR *dir;
   struct dirent *dp;
   int filename;
@@ -51,37 +54,37 @@ int main(){
   if(child_process == 0){
     close(fd[1]);
 
-    int num_bytes= read(fd[0], buffer, sizeof(buffer));
-    if(num_bytes == -1){
-      perror("\nError en la lectura");
-      exit(EXIT_FAILURE);
+    while((num_bytes= read(fd[0], buffer, SIZE)) != 0){
+      if(num_bytes == -1){
+        perror("\nError en la lectura");
+        exit(EXIT_FAILURE);
+      }
+      //Cargamos los atributos de buffer en atributes_buffer
+      if(stat(buffer, &attributes_buffer) < 0){
+        printf("\nError al intentar acceder a los atributos de %s\n", buffer);
+        perror("\nError en stat\n");
+        exit(EXIT_FAILURE);
+      }
+
+      //Abrimos el archivo correspondiente
+      if((filename= open(buffer, O_RDWR|O_EXCL, S_IRWXU)) < 0){
+        printf("\nError al abrir el archivo %s\n", buffer);
+        exit(EXIT_FAILURE);
+      }
+
+      //Leemos del cauce el nombre del archivo escrito por el padre mediante el mecanismo de proyección de archivos
+      printf("(%lu\n", attributes_buffer.st_size);
+
+      //El primer argumento es 0, luego el kernel decide la dirección en la que crear el mapping
+      projection = (char *) mmap (0, attributes_buffer.st_size, PROT_READ|PROT_WRITE, MAP_SHARED, filename, 0);
+
+      if (projection == MAP_FAILED) {
+        perror("Falló la proyección");
+        exit(EXIT_FAILURE);
+      }
+      printf("\nArchivo mostrado: %s\n%s\n", buffer, projection);
+      close(filename);
     }
-    //Cargamos los atributos de buffer en atributes_buffer
-    if(stat(buffer, &atributes_buffer) < 0){
-      printf("\nError al intentar acceder a los atributos de %s\n", buffer);
-      perror("\nError en stat\n");
-      exit(EXIT_FAILURE);
-    }
-
-    //Abrimos el archivo correspondiente
-    if((filename= open(buffer, O_RDWR|O_EXCL, S_IRWXU)) < 0){
-      printf("\nError al abrir el archivo %s\n", buffer);
-      exit(EXIT_FAILURE);
-    }
-
-    //Leemos del cauce el nombre del archivo escrito por el padre mediante el mecanismo de proyección de archivos
-    printf("(%lu\n", atributes_buffer.st_size);
-
-    //El primer argumento es 0, luego el kernel decide la dirección en la que crear el mapping
-    projection = (char *) mmap (0, atributes_buffer.st_size, PROT_READ|PROT_WRITE, MAP_SHARED, filename, 0);
-
-    if (projection == MAP_FAILED) {
-      perror("Falló la proyección");
-      exit(EXIT_FAILURE);
-    }
-
-    close(filename);
-
     printf("\n%s\n","Proceso hijo finalizado" );
 
     //Mostramos por pantalla el contenido del archivo proyectado por el proceso padre
@@ -98,7 +101,7 @@ int main(){
 
     while((dp= readdir(dir)) != NULL){  //Mientras haya archivos que leer
       //Obtenemos información del archivo dp->d_name y la almacenamos en atributes
-      if(stat(dp->d_name, &atributes) < 0){
+      if(stat(dp->d_name, &attributes) < 0){
         printf("\nError al intentar acceder a los atributos de %s\n", dp->d_name);
         perror("\nError en stat\n");
         exit(EXIT_FAILURE);
@@ -106,7 +109,7 @@ int main(){
 
       //Nos cercioramos de que no sea un archivo de los ocultos
       if(dp->d_name[0] != '.' && dp->d_name[strlen(dp->d_name)-1] != '~'){
-        if(S_ISREG(atributes. st_mode)){ //Si el archivo es regular
+        if(S_ISREG(attributes.st_mode)){ //Si el archivo es regular
           printf("\nNúmero de inodo del archivo %s: %d, UID del propietario: %d", dp->d_name, dp->d_ino, getuid());
           //Escribimos el nombre del archivo en el cauce
           write(fd[1], dp->d_name, sizeof(dp->d_name));
@@ -115,10 +118,10 @@ int main(){
       /*Nos aseguramos de que los archivos cuyo nombre va a pasar al hijo tienen
       permiso de lectura para el proceso, si no fuese así, los cambiamos para que
       los pueda leer el hijo.*/
-      if((atributes.st_mode & S_IRGRP) != S_IRGRP){
-        int new_permissions= atributes.st_mode;
-        new_permissions |= S_IRGRP;
-        chmod(dp->d_name, new_permissions);
+      if((attributes.st_mode & S_IRGRP) != S_IRGRP){
+        int new_mode= attributes.st_mode;
+        new_mode |= S_IRGRP;
+        chmod(dp->d_name, new_mode);
       }
     }
     /*Establecemos un manejador para la señal SIGPIPE en el padre en caso de que
