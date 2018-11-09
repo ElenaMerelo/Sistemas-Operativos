@@ -16,15 +16,18 @@ especifica la opción -o. Obtén más información con man.*/
 #include <stdlib.h>
 #include <string.h>
 
-#define S_ISREG2(atribute) S_ISREG(atribute.st_mode)
+// #define S_ISREG2(mode) ( (mode & 0170000) == 0100000)
+// #define S_ISREG2(atribute) S_ISREG(atribute.st_mode) --> si ponemos este habrá que poner en la línea 39 atribute.st_mode
+#define S_ISREG2(atribute) ((atribute.st_mode & S_IFMT) == S_IFREG)
 
 int main(int argc, char* argv[]){
   int i;
   struct stat atribute;
   char tipoArchivo[30];
+
   if(argc<2) {
     printf("\nSintaxis de ejecucion: tarea2 [<nombre_archivo>]+\n\n");
-    exit(-1);
+    exit(EXIT_FAILURE);
   }
 
   for(i=1;i<argc;i++) {

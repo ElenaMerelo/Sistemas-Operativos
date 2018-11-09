@@ -9,6 +9,7 @@ Trabajo con llamadas al sistema del Sistema de Archivos ''POSIX 2.10 compliant''
 #include<stdio.h>
 #include<errno.h>
 #include<string.h>
+
 int main(int argc, char *argv[]){
   int i;
   struct stat atributos;
@@ -51,3 +52,4 @@ int main(int argc, char *argv[]){
     }
   }
   return 0;
+}
