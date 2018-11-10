@@ -18,6 +18,7 @@ En segundo lugar (una vez creados los archivos) hay que crear un segundo program
 int main(int argc, char *argv[]){
   int fd1,fd2;
   struct stat atributos;
+
   //CREACION DE ARCHIVOS
   if((fd1=open("archivo1",O_CREAT|O_TRUNC|O_WRONLY,S_IRGRP|S_IWGRP|S_IXGRP))<0){
     printf("\nError %d en open(archivo1,...)",errno);
@@ -52,20 +53,20 @@ int main(int argc, char *argv[]){
   return 0;
 }
 ~~~
-**El programa cambia los permisos de los archivos pasados como argumento. Veamos cómo: Creo dos archivos, test.txt y test2.txt, cuyos permisos iniciales son `-rw-rw-r--`. Al ejecutar el programa pasándolos como argumento, escribiendo desde la terminal `gcc tarea3.c -o tarea3`, y luego `./tarea3 test.txt test2.txt` devuelve el siguiente error: `Error en open: Permission denied
-Error 13 en open(archivo1,...)`, incluso habiendo hecho antes `chmod a+x test.txt`. Modificamos pues el archivo original para que se pasen obligatoriamente dos archivos, y las operaciones realizadas en el programa se hagan sobre éstos, incluyendo al principio del código:**
-~~~c
-if(argc<2) {
-  printf("\nHa de pasar dos archivos como argumento");
-  exit(-1);
-}
+**Este programa crea dos archivos, "archivo1" (en el que solo se puede escribir, para el cual el grupo tiene permiso de ejecución, lectura y escritura, especificando O_TRUNC por si el archivo ya existía, para vaciarlo) y "archivo2" (puesto todo a 0 con umask(0), también truncado, solo de escritura, con permisos de lectura, escritura y ejecucion para el grupo), y luego cambiamos los permisos, de manera que el grupo ya no puede ejecutar "archivo1" y estableciendo el bit de grupo, y dándole permisos de lectura, escritura y ejecución al usuario, de lectura y escritura al grupo y de lectura a otros en "archivo2". Como consta en: https://github.com/DGIIMUnderground/DGIIM2/blob/master/C1/SO/Practicas/ModuloII/Sesion2.md:
+
+En archivo1, de primeras se añade lectura escritura y ejecución para el grupo, que al pasarle la máscara ~022, se hace la operación 000 111 000 & 111 101 101 = 000 101 000(Se puede decir que se le quitan los permisos de la máscara). Antes de la llamada a chmod esos son los permisos que tiene archivo1. chmod toma los permisos actuales y les quita el permiso de ejecución al grupo (atributos.st_mode & ~S_IXGRP), para después activar la asignación del GID propietario al GID efectivo. Esta acción, al hacer ls -l se ve codificada con una S en el bit correspondiente a la ejecución del grupo. Por este motivo, tras ejecutar el programa, en archivo1 el comando ls -l nos devuelve la siguiente secuencia: ---r-S---.
+Para archivo2, de primeras open le había asignado unos permisos que, como la máscara estaba establecida a 000 se mantuvieron iguales. Sin embargo al hacer chmod no se tienen en cuenta los permisos que tenía anteriormente, simplemente se le asignan unos nuevos. Se activa la lectura, escritura y ejecución para el usuario y permite lectura y escritura al grupo y lectura para otros. Si no se ha podido cambiar alguno, se sale del programa. Si ha ido bien, termina la ejecución.
+
+ Así, al compilar el programa, ejecutarlo y ver los permisos que tienen los archivos nuevos obtenemos:**
+~~~shell
+> gcc tarea3.c -o tarea3
+> ./tarea3
+> ls -l archivo*
+-rwxrwSrwx 1 elena elena  0 nov  9 12:14 archivo1
+-rwxrw-r-- 1 elena elena  0 nov  9 12:14 archivo2
 ~~~
-**y cambiando donde antes ponía archivoi por argv[i]. Ahora recompilamos y ejecutamos, y vemos cómo efectivamente ha cambiado de la forma esperada los permisos de test.txt y otro archivo creado de la misma forma test2.txt:**
-~~~
-$ls -l test*.txt
--rwxrw-r-- 1 elena elena 0 dic  9 16:18 test2.txt
--rwxrwSr-x 1 elena elena 0 dic  9 16:18 test.txt
-~~~
+
 ### Actividad 2.2 Trabajo con funciones estándar de manejo de directorios
 **Ejercicio 2.** Realiza un programa en C utilizando las llamadas al sistema necesarias que acepte como entrada:
 + Un argumento que representa el 'pathname' de un directorio.
@@ -92,8 +93,8 @@ int main(int argc, char *argv[]){
     exit(-1);
   }
 
-  DIR *dir;
-  struct dirent *dp;
+  DIR * dir;
+  struct dirent * dp;
 
   dir= opendir(argv[1]);
   if (dir == NULL) {
@@ -102,15 +103,20 @@ int main(int argc, char *argv[]){
     exit (-1);
   }
 
-  char *endptr;
-  mode_t mask= strtoul(argv[2], &endptr, 8);
+  char * endptr;
+  mode_t mask= strtoul(argv[2], &endptr, 8); //Equivalente a: int mask = strtol(argv[2], NULL, 8);
   mode_t old_mask;
 
   struct stat atributes;
+  char complete_name [500];
 
   //Leemos las entradas del directorios
   while((dp= readdir(dir)) != NULL){
-    if(stat(dp->d_name, &atributes) < 0){
+    strcpy(complete_name, argv[1]);
+    strcat(complete_name, "/");
+    strcat(complete_name,elemento_dir->d_name);
+    
+    if(stat(complete_name, &atributes) < 0){
       printf("\nError al intentar acceder a los atributos de %s\n", dp->d_name);
       perror("\nError en stat\n");
       exit(-1);
@@ -136,10 +142,6 @@ Los i-nodos son:
 Existen 24 archivos regulares con permiso x para grupo y otros
 El tamaño total ocupado por dichos archivos es 2345674 bytes
 ~~~c
-/*Compilación y enlazado: gcc ejer3.c -o ejer3
-Ejecución: ./ejer3 pathname(opcional)
-*/
-
 #include<sys/types.h>
 #include<unistd.h>
 #include<stdlib.h>
@@ -153,10 +155,11 @@ un directorio dentro hace lo mismo, y así sucesivamente hasta que no haya más 
 ni archivos. Hacemos los punteros constantes para que no se pueda modificar el lugar al
 que apuntan pero sí a lo que apuntan.
 */
-void info_dir(const char *pathname, int * const files, long long int * const total_size){
-  DIR* dir= NULL;
-  struct dirent* dp= NULL;
+void info_dir(const char *pathname, int * const reg_files, long long int * const total_size, long long int *const reg_size){
+  DIR * dir= NULL;
+  struct dirent * dp= NULL;
   struct stat atributes;
+  char name[500];
 
   dir= opendir(pathname);
   //Abrimos el flujo del directorio pasado como argumento
@@ -166,58 +169,69 @@ void info_dir(const char *pathname, int * const files, long long int * const tot
     exit(-1);
   }
 
-  /*Recorremos ahora lo que hay en el directorio
+  /* Recorremos ahora lo que hay en el directorio
   Con S_IXGRP  comprobamos si el grupo tiene permisos de ejecución
   Con  S_IXOTH comprobamos si otros tienen permiso de ejecución
-  Con S_ISREG(mode) vemos si el archivo es regular, si lo es incrementamos el contado de archivos regulares.*/
+  Con S_ISREG(mode) vemos si el archivo es regular, si lo es incrementamos el contado de archivos regulares
+  * /
   while((dp= readdir(dir)) != NULL){
-    if(stat(dp->d_name, &atributes) < 0){
-      printf("\nError al intentar acceder a los atributos de %s\n", dp->d_name);
-      perror("\nError en stat\n");
-      exit(-1);
-    }
-    if(dp->d_name[0] != '.' && dp->d_name[strlen(dp->d_name)-1] != '~'){
+    //Si no es un archivo oculto
+    if(dp->d_name[0] != '.' && strcmp(dp->d_name, "..") != 0 && dp->d_name[strlen(dp->d_name)-1] != '~'){
+      strcpy(name, pathname);
+      strcat(name, "/");
+      strcat(name,dp->d_name);
+
+      if(stat(name, &atributes) < 0){
+        printf("\nError al intentar acceder a los atributos de %s\n", dp->d_name);
+        perror("\nError en stat\n");
+        // exit(-1);
+      }
+
+      (* total_size) += atributes.st_size;
+
       if(S_ISREG(atributes.st_mode)){ //Si el archivo es regular
-        //printf("\n%s es un archivo regular", dp->d_name);
+        printf("\n%s es un archivo regular", dp->d_name);
+
         if(atributes.st_mode & (S_IXGRP | S_IXOTH)){  //Si group y others tienen permiso de ejecución
           printf("\n%s es un archivo regular y tiene permisos de ejecución para others y group", dp->d_name);
-          (* files)++;
-          (* total_size) += atributes.st_size;
-          printf("\n Nombre: %s, i-nodo: %d", dp->d_name, dp->d_ino);
-          printf("\nNúmero de archivos regulares: %d, total de bytes: %lld", &files, &total_size);
+          (* reg_files)++;
+          (* reg_size) += (int) atributes.st_size;
+          printf("\n Nombre: %s, i-nodo: %ld", dp->d_name, dp->d_ino);
         }
-        //else
-          //printf("\n%s no tiene permisos de ejecución para others y group", dp->d_name);
+        else
+          printf("\n%s no tiene permisos de ejecución para others y group", dp->d_name);
       }
+
       //Si es directorio y no es un archivo oculto
       else if(S_ISDIR(atributes.st_mode)){ //Si es un directorio
         printf("\n%s es un directorio", dp->d_name);
-        info_dir(dp->d_name, &files, &total_size);  //Nos metemos dentro de él, y realizamos lo mismo que en el directorio padre
+        info_dir(dp->d_name, &reg_files, &total_size, &reg_size);  //Nos metemos dentro de él, y realizamos lo mismo que en el directorio padre
       }
-      //else
-        //printf("\n%s no es un archivo regular ni un directorio", dp->d_name);
-
     }
+    else
+      printf("\n%s no es un archivo regular ni un directorio", dp->d_name);
   }
   closedir(dir);
 }
 
 int main(int argc, char *argv[]){
-  int files= 0;
-  long long int total_size= 0;
+  int reg_files= 0;
+  long long int total_size= 0, reg_size= 0;
+
   if(argc > 2){
-    printf("\nModo de ejecución: ./ejer3 ./directorio\n");
+    printf("\nModo de ejecución: ./ejer3 (./directorio)\n");
     exit(-1);
   }
 
   if(argc == 2)
-    info_dir(argv[1], &files, &total_size);
+    info_dir(argv[1], &reg_files, &total_size, &reg_size);
   else
-    info_dir(get_current_dir_name(), &files, &total_size);
+    info_dir(".", &reg_files, &total_size, &reg_size);
 
-  printf("\nExisten %d archivos regulares con permisos de ejecución para group y others\n", files);
-  printf("\nEl tamaño total ocupado por dichos archivos es %d bytes\n", total_size);
+  printf("\nExisten %d archivos regulares con permisos de ejecución para group y others\n", reg_files);
+  printf("\nEl tamaño total ocupado por archivos regulares es %lld bytes y por el resto de archivos %lld\n", reg_size, total_size);
 }
+
 ~~~
 ### Actividad 2.3 Trabajo con la llamada `nftw()` para recorrer un sistema de archivos
 **Ejercicio 4.** Implementa de nuevo el programa buscar del ejercicio 3 utilizando la llamada al sistema `nftw`.
@@ -369,3 +383,11 @@ main() {
   }
 }
 ~~~
+
+
+
+
+
+
+
+#

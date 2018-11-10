@@ -29,7 +29,7 @@ int main(int argc, char *argv[]){
     printf("\nModo de ejecución: ./ejer2,2 ./pathname número\n");
     exit(-1);
   }
-  
+
   DIR *dir;
   struct dirent *dp;
 
@@ -41,24 +41,33 @@ int main(int argc, char *argv[]){
   }
 
   char *endptr;
+  //Equivalente a int mask= strtol(argv[2], NULL, 8);
   mode_t mask= strtoul(argv[2], &endptr, 8);
   mode_t old_mask;
 
   struct stat atributes;
+  char complete_name [500];
 
   //Leemos las entradas del directorios
   while((dp= readdir(dir)) != NULL){
-    if(stat(dp->d_name, &atributes) < 0){
-      printf("\nError al intentar acceder a los atributos de %s\n", dp->d_name);
-      perror("\nError en stat\n");
-      exit(-1);
+    //Nos aseguramos de que no se vaya a los archivos ocultos
+    if (strcmp (dp->d_name, "..") != 0 && strcmp (dp->d_name, ".") != 0){
+      strcpy(complete_name, argv[1]);
+      strcat(complete_name, "/");
+      strcat(complete_name,dp->d_name);
+
+      if(stat(complete_name, &atributes) < 0){
+        printf("\nError al intentar acceder a los atributos de %s\n", dp->d_name);
+        perror("\nError en stat\n");
+        exit(-1);
+      }
+      old_mask= atributes.st_mode;
+      printf("\n%s", dp->d_name);
+    	if((chmod(dp->d_name, mask)) < 0 )
+    		printf("\n%s: %d\t %d\t %s", dp->d_name, errno, old_mask, "error");
+    	else
+    		printf("\n%s: %d\t %d", dp->d_name, old_mask, atributes.st_mode);
     }
-    old_mask= atributes.st_mode;
-    printf("%s\n", dp->d_name);
-  	if((chmod(dp->d_name, mask)) < 0 )
-  		printf("\n%s: %d\t %d\t %s", dp->d_name, errno, old_mask, "error");
-  	else
-  		printf("\n%s: %d\t %d", dp->d_name, old_mask, atributes.st_mode);
   }
   closedir(dir);
 }
