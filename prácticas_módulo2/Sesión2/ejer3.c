@@ -33,7 +33,7 @@ un directorio dentro hace lo mismo, y así sucesivamente hasta que no haya más 
 ni archivos. Hacemos los punteros constantes para que no se pueda modificar el lugar al
 que apuntan pero sí a lo que apuntan.
 */
-void info_dir(const char *pathname, int * const reg_files, long long int * const total_size, long long int *const reg_size){
+void info_dir(const char *pathname, int * reg_files, long long int * total_size, long long int * reg_size){
   DIR *dir= NULL;
   struct dirent *dp= NULL;
   struct stat atributes;
@@ -75,8 +75,8 @@ void info_dir(const char *pathname, int * const reg_files, long long int * const
         if(atributes.st_mode & (S_IXGRP | S_IXOTH)){  //Si group y others tienen permiso de ejecución
           printf("\n%s es un archivo regular y tiene permisos de ejecución para others y group", dp->d_name);
           (*reg_files)++;
-          (*reg_size) += atributes.st_size;
-          printf("\n Nombre: %s, i-nodo: %d", dp->d_name, dp->d_ino);
+          (*reg_size) += (int) atributes.st_size;
+          printf("\n Nombre: %s, i-nodo: %ld", dp->d_name, dp->d_ino);
         }
         else
           printf("\n%s no tiene permisos de ejecución para others y group", dp->d_name);
