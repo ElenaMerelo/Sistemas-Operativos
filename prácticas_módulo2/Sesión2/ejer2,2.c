@@ -63,10 +63,10 @@ int main(int argc, char *argv[]){
       }
       old_mask= atributes.st_mode;
       printf("\n%s", dp->d_name);
-    	if((chmod(dp->d_name, mask)) < 0 )
-    		printf("\n%s: %d\t %d\t %s", dp->d_name, errno, old_mask, "error");
+    	if((chmod(complete_name, mask)) < 0 )
+    		printf("\n%s: %o\t %o\t %s", dp->d_name, errno, old_mask, "error");
     	else
-    		printf("\n%s: %d\t %d", dp->d_name, old_mask, atributes.st_mode);
+    		printf("\n%s: %o\t %o", dp->d_name, old_mask, atributes.st_mode);
     }
   }
   closedir(dir);
