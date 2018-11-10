@@ -100,14 +100,14 @@ int main(int argc, char *argv[]){
   if(argc != 2)
     fd=0;
   else{
-    if((fd=open(argv[1],O_CREAT|O_RDONLY,S_IRUSR|S_IWUSR))<0) {
+    if((fd=open(argv[1],O_RDONLY,S_IRUSR|S_IWUSR))<0) {
       printf("\nError %d en open",errno);
       perror("\nError en open");
       exit(-1);
     }
   }
 
-  if((fd_o=open("salida.txt",O_CREAT|O_WRONLY,S_IRUSR|S_IWUSR))<0) {
+  if((fd_o=open("salida.txt",O_CREAT|O_TRUNC|O_WRONLY,S_IRUSR|S_IWUSR))<0) {
     printf("\nError %d en open",errno);
     perror("\nError en open");
     exit(-1);
@@ -201,17 +201,6 @@ int main(int argc, char *argv[]){
 **Ejercicio 4.** Define una macro en lenguaje C que tenga la misma funcionalidad que la macro `S_ISREG(mode)` usando para ello los flags definidos en `<sys/stat.h>` para el campo `st_mode` de la struct `stat`, y comprueba que funciona en un programa simple. Consulta en un libro de C o en internet cómo se especifica una macro con argumento en C. `#define S_ISREG2(mode) ...`
 *Nota: Puede ser interesante para depurar la ejecución de un programa en C que utilice llamadas al sistema usar la orden strace. Esta orden, en el caso más simple, ejecuta un programa hasta que finalice e intercepta y muestra las llamadas al sistema que realiza el proceso junto con sus argumentos y devuelve los valores devueltos en la salida de error estándar o en un archivo si se especifica la opción -o. Obtén más información con man.*
 ~~~c
-/*Ejercicio 4. Define una macro en lenguaje C que tenga la misma funcionalidad que la macro
-S_ISREG(mode) usando para ello los flags definidos en <sys/stat.h> para el campo st_mode de
-la struct stat, y comprueba que funciona en un programa simple. Consulta en un libro de C o
-en internet cómo se especifica una macro con argumento en C.
-#define S_ISREG2(mode) ...
-Nota: Puede ser interesante para depurar la ejecución de un programa en C que utilice llamadas
-al sistema usar la orden strace. Esta orden, en el caso más simple, ejecuta un programa hasta
-que finalice e intercepta y muestra las llamadas al sistema que realiza el proceso junto con sus
-argumentos y devuelve los valores devueltos en la salida de error estándar o en un archivo si se
-especifica la opción -o. Obtén más información con man.*/
-
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h> //Por usar stat
@@ -219,8 +208,9 @@ especifica la opción -o. Obtén más información con man.*/
 #include <stdlib.h> //Para usar exit
 #include <string.h> //Para poder hacer strcpy
 
-#define S_ISREG2(atribute) S_ISREG(atribute.st_mode)
-// #define S_ISREG2(atribute) ((atribute.st_mode & S_IFMT) == S_IFREG)? true : false
+#define S_ISREG2(atribute) ((atribute.st_mode & S_IFMT) == S_IFREG)? true : false
+// Equivalentemente: #define S_ISREG2(mode) ( (mode & 0170000) == 0100000)
+
 int main(int argc, char* argv[]){
   int i;
   struct stat atribute;
@@ -236,7 +226,7 @@ int main(int argc, char* argv[]){
       printf("\nError al intentar acceder a los atributos de %s",argv[i]);
       perror("\nError en lstat");
     }
-    if(S_ISREG2(atribute))
+    if(S_ISREG2(atribute)) // if(S_ISREG2(atribute.st_mode))
       strcpy(tipoArchivo,"Regular");
     else
       strcpy(tipoArchivo,"No es un archivo regular");
