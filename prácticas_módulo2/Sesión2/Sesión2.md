@@ -157,7 +157,7 @@ un directorio dentro hace lo mismo, y así sucesivamente hasta que no haya más 
 ni archivos. Hacemos los punteros constantes para que no se pueda modificar el lugar al
 que apuntan pero sí a lo que apuntan.
 */
-void info_dir(const char *pathname, int * const reg_files, long long int * const total_size, long long int *const reg_size){
+void info_dir(const char *pathname, int * reg_files, long long int * total_size, long long int * reg_size){
   DIR * dir= NULL;
   struct dirent * dp= NULL;
   struct stat atributes;
@@ -295,71 +295,7 @@ int main(int argc, char *argv[]){
 
 
 ### Extra:
-~~~
-NAME
-       getumask - get file creation mask
 
-SYNOPSIS
-       #define _GNU_SOURCE             /* See feature_test_macros(7) */
-       #include <sys/types.h>
-       #include <sys/stat.h>
-
-       mode_t getumask(void);
-
-DESCRIPTION
-       This function returns the current file creation mask.  It is equivalent
-       to
-
-           mode_t getumask(void)
-           {
-               mode_t mask = umask( 0 );
-               umask(mask);
-               return mask;
-           }
-
-       except that it is documented to be thread-safe (that is, shares a  lock
-       with the umask(2) library call).
-       NAME
-              chown, fchown, lchown, fchownat - change ownership of a file
-
-       SYNOPSIS
-              #include <unistd.h>
-
-              int chown(const char *pathname, uid_t owner, gid_t group);
-              int fchown(int fd, uid_t owner, gid_t group);
-              int lchown(const char *pathname, uid_t owner, gid_t group);
-
-              #include <fcntl.h>           /* Definition of AT_* constants */
-              #include <unistd.h>
-
-              int fchownat(int dirfd, const char *pathname,
-                           uid_t owner, gid_t group, int flags);
-
-          Feature    Test   Macro   Requirements   for   glibc   (see   fea‐
-          ture_test_macros(7)):
-
-              fchown(), lchown():
-                  _BSD_SOURCE || _XOPEN_SOURCE >= 500 ||
-                  _XOPEN_SOURCE && _XOPEN_SOURCE_EXTENDED
-                  || /* Since glibc 2.12: */ _POSIX_C_SOURCE >= 200809L
-
-              fchownat():
-                  Since glibc 2.10:
-                      _XOPEN_SOURCE >= 700 || _POSIX_C_SOURCE >= 200809L
-                  Before glibc 2.10:
-                      _ATFILE_SOURCE
-
-       DESCRIPTION
-              These  system calls change the owner and group of a file.  The
-              chown(), fchown(), and lchown() system calls  differ  only  in
-              how the file is specified:
-
-              * chown() changes the ownership of the file specified by path‐
-                name, which is dereferenced if it is a symbolic link.
-
-              * fchown() changes the ownership of the file  referred  to  by
-                the open file descriptor fd.
-              * lchown()  is like chown(), but does not dereference symbolic links.
 ~~~
 #### Ejemplo de uso de getcwd
 ~~~c
@@ -385,11 +321,3 @@ main() {
   }
 }
 ~~~
-
-
-
-
-
-
-
-#
