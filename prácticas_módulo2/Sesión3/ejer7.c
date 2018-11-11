@@ -4,7 +4,7 @@ deberá ejecutar el programa pasado como primer argumento en foreground si no se
 especifica la cadena “bg” y en background en caso contrario. Si el programa
 tiene argumentos hay que ejecutarlo con éstos.
 Compilación y enlazado: gcc ejer7.c -o ejer7
-Ejecución: ./ejer7 nombre_programa [argumentos]
+Ejecución: ./ejer7 nombre_programa [argumentos poniendo o no bg]
 Autora: Elena Merelo Molina
 */
 
@@ -24,26 +24,37 @@ int main(int argc, char *argv[]){
   /*Vamos recorriendo los argumentos del programa, y si alguno de ellos es la cadena "bg"
   ponemos exec_foreground a false, ya que se ejecutará el programa pasado como primer
   argumento en background.*/
-  for(i= 1; i< argc && exec_foreground; i++){
-    if(strcmp(argv[i], "bg") == 0)
+  for(i= 0; i< argc; i++){
+    if(strcmp(argv[i], "bg") == 0){
+      printf("\nEjecutando en background\n");
       exec_foreground= 0;
+    }
   }
-  
+
   if((child_process= fork()) == 0){ //Parte ejecutada por el hijo
-    //Creamos un vector equivalente a char *argv[] pero sin el argumento bg ni argv[0]
-    //char *argv_2[argc+1];
-    for(i= 0; i< argc-1; i++){
+    //Creamos un vector equivalente a char *argv[] pero sin el argumento bg ni argv[0,1]
+    char *argv_2[argc];
+    for(i= 2; i< argc; i++){
       if(strcmp(argv[i], "bg") != 0)
-        argv_2[j]= argv[i+1];
+        argv_2[j]= argv[i];
 
       j++;
     }
     /*Condición necesaria para que funcionen las funciones exec(), que el vector
     con los argumentos del programa acabe con NULL y empiece con el archivo que
     va a ser ejecutado.*/
-    argv_2[j]= NULL;
+    if(!exec_foreground){
+      argv_2[j]= "&";
+      argv_2[j+1]= NULL;
+    }
+    else argv_2[j]= NULL;
 
-    if(execv(argv[1], argv_2) == -1){
+    string programa;
+    strcp(programa, ".");
+    strcat(programa, "/");
+    strcat(programa, argv[1]);
+
+    if(execv(programa, argv_2) == -1){
       fprintf(stderr, "%s\n", "Error %d en execv");
       exit(EXIT_FAILURE);
     }

@@ -25,6 +25,7 @@ int main(int argc, char *argv[]){
   /*Si el último argumento es la cadena "bg" ponemos exec_foreground a false,
   ya que se ejecutará el programa pasado como primer argumento en background.*/
   if(strcmp(argv[argc-1], "bg") == 0){
+    printf("\nEjecutando en background\n");
     num_arguments= argc-1;
     exec_foreground= 0;
   }
@@ -32,9 +33,9 @@ int main(int argc, char *argv[]){
   if((child_process= fork()) == 0){ //Parte ejecutada por el hijo
     //Creamos un vector equivalente a char *argv[] pero sin el argumento bg ni argv[0]
     char *argv_2[num_arguments];
-    for(i= 0; i< num_arguments-1; i++)
-        argv_2[i]= argv[i+1];
-    argv_2[num_arguments-1]= NULL;
+    for(i= 1; i< num_arguments; i++)
+        argv_2[i]= argv[i];
+    argv_2[num_arguments]= NULL;
 
     if(execv(argv[1], argv_2) == -1){
       fprintf(stderr, "%s\n", "Error %d en execv");

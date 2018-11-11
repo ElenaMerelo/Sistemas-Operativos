@@ -293,7 +293,7 @@ int main(){
     printf("\nHa finalizado mi hijo con PID %d y estado %d\n", children[i], status);
     printf("\nMe quedan %d hijos vivos, éste es el hijo %d\n", --num_processes, i);
   }
-  
+
   for(int i= 0; i<= 4; i+=2){
     //Esperamos a los hijos pares
     waitpid(children[i], &status, 0);
@@ -344,7 +344,7 @@ printf("\nMi hijo %d ha finalizado con el estado %d\n", pid, estado>>8);
 exit(0);
 }
 ~~~
-**Ejercicio 7.** Escribe un programa que acepte como argumentos el nombre de un programa, sus argumentos si los tiene, y opcionalmente la cadena “bg”. Nuesto programa deberá ejecutar el programa pasado como primer argumento en foreground si no se especifica la cadena “bg” y en background en caso contrario. Si el programa tiene argumentos hay que ejecutarlo con éstos.
+**Ejercicio 7.** Escribe un programa que acepte como argumentos el nombre de un programa, sus argumentos si los tiene, y opcionalmente la cadena “bg”. Nuestro programa deberá ejecutar el programa pasado como primer argumento en foreground si no se especifica la cadena “bg” y en background en caso contrario. Si el programa tiene argumentos hay que ejecutarlo con éstos.
 ~~~c
 //File: ejer7.c
 #include <unistd.h> //Para usar la familia de funciones exec()
@@ -353,49 +353,49 @@ exit(0);
 #include <stdlib.h> //Para exit()
 
 int main(int argc, char *argv[]){
-int i, j= 0, status, child_process, exec_foreground= 1; //Partimos de que el programa se ejecuta en el foreground
+  int i, j= 0, status, child_process, exec_foreground= 1; //Partimos de que el programa se ejecuta en el foreground
 
-if(argc < 2){
-  fprintf(stderr, "%s\n", "Como mínimo ha de introducir el nombre del programa");
-  exit(EXIT_FAILURE);
-}
-
-/*Vamos recorriendo los argumentos del programa, y si alguno de ellos es la cadena "bg"
-ponemos exec_foreground a false, ya que se ejecutará el programa pasado como primer
-argumento en background.*/
-for(i= 1; i< argc && exec_foreground; i++){
-  if(strcmp(argv[i], "bg") == 0)
-    exec_foreground= 0;
-}
-
-if((child_process= fork()) == 0){ //Parte ejecutada por el hijo
-  //Creamos un vector equivalente a char* argv[] pero sin el argumento bg ni argv[0]
-  char* argv_2[argc+1];
-  for(i= 0; i< argc-1; i++){
-    if(strcmp(argv[i], "bg") != 0)
-      argv_2[j]= argv[i+1];
-
-    j++;
-  }
-  /*Condición necesaria para que funcionen las funciones exec(), que el vector
-  con los argumentos del programa acabe con NULL y empiece con el archivo que
-  va a ser ejecutado.*/
-  argv_2[j]= NULL;
-
-  if(execv(argv[1], argv_2) == -1){
-    fprintf(stderr, "%s\n", "Error %d en execv");
+  if(argc < 2){
+    fprintf(stderr, "%s\n", "Como mínimo ha de introducir el nombre del programa");
     exit(EXIT_FAILURE);
   }
-}
-//Part ejecutada por el padre
-else{
-  printf("Soy el proceso padre y mi pid es: %d\n", getpid());
 
-  /*Si el último argumento no es *bg*, se ejecuta en primer plano, por lo
-  que el padre se espera al hijo.* /
-  if(exec_foreground)
-    waitpid(child_process,&status,0);
-}
+  /*Vamos recorriendo los argumentos del programa, y si alguno de ellos es la cadena "bg"
+  ponemos exec_foreground a false, ya que se ejecutará el programa pasado como primer
+  argumento en background.*/
+  for(i= 1; i< argc && exec_foreground; i++){
+    if(strcmp(argv[i], "bg") == 0)
+      exec_foreground= 0;
+  }
+
+  if((child_process= fork()) == 0){ //Parte ejecutada por el hijo
+    //Creamos un vector equivalente a char* argv[] pero sin el argumento bg ni argv[0]
+    char* argv_2[argc+1];
+    for(i= 0; i< argc-1; i++){
+      if(strcmp(argv[i], "bg") != 0)
+        argv_2[j]= argv[i+1];
+
+      j++;
+    }
+    /*Condición necesaria para que funcionen las funciones exec(), que el vector
+    con los argumentos del programa acabe con NULL y empiece con el archivo que
+    va a ser ejecutado.*/
+    argv_2[j]= NULL;
+
+    if(execv(argv[1], argv_2) == -1){
+      fprintf(stderr, "%s\n", "Error %d en execv");
+      exit(EXIT_FAILURE);
+    }
+  }
+  //Part ejecutada por el padre
+  else{
+    printf("Soy el proceso padre y mi pid es: %d\n", getpid());
+
+    /*Si el último argumento no es *bg*, se ejecuta en primer plano, por lo
+    que el padre se espera al hijo.* /
+    if(exec_foreground)
+      waitpid(child_process,&status,0);
+  }
 }
 ~~~
 **Otra forma de hacer el programa, suponiendo que bg se pone al final sería la siguiente. La anterior forma no siempre funciona, pero ésta sí**
@@ -417,42 +417,42 @@ Autora: Elena Merelo Molina
 #include <stdlib.h> //Para exit()
 
 int main(int argc, char *argv[]){
-int i, j= 0, status, child_process, exec_foreground= 1; //Partimos de que el programa se ejecuta en el foreground
-int num_arguments= argc;
+  int i, j= 0, status, child_process, exec_foreground= 1; //Partimos de que el programa se ejecuta en el foreground
+  int num_arguments= argc;
 
-if(argc < 2){
-  fprintf(stderr, "%s\n", "Como mínimo ha de introducir el nombre del programa");
-  exit(EXIT_FAILURE);
-}
-
-/*Si el último argumento es la cadena "bg" ponemos exec_foreground a false,
-ya que se ejecutará el programa pasado como primer argumento en background.*/
-if(strcmp(argv[argc-1], "bg") == 0){
-  num_arguments= argc-1;
-  exec_foreground= 0;
-}
-
-if((child_process= fork()) == 0){ //Parte ejecutada por el hijo
-  //Creamos un vector equivalente a char *argv[] pero sin el argumento bg ni argv[0]
-  char* argv_2[num_arguments];
-  for(i= 0; i< num_arguments-1; i++)
-      argv_2[i]= argv[i+1];
-  argv_2[num_arguments-1]= NULL;
-
-  if(execv(argv[1], argv_2) == -1){
-    fprintf(stderr, "%s\n", "Error %d en execv");
+  if(argc < 2){
+    fprintf(stderr, "%s\n", "Como mínimo ha de introducir el nombre del programa");
     exit(EXIT_FAILURE);
   }
-}
-//Part ejecutada por el padre
-else{
-  printf("Soy el proceso padre y mi pid es: %d\n", getpid());
 
-  /*Si el último argumento no es *bg*, se ejecuta en primer plano, por lo
-  que el padre se espera al hijo.* /
-  if(exec_foreground)
-    waitpid(child_process,&status,0);
-}
+  /*Si el último argumento es la cadena "bg" ponemos exec_foreground a false,
+  ya que se ejecutará el programa pasado como primer argumento en background.*/
+  if(strcmp(argv[argc-1], "bg") == 0){
+    num_arguments= argc-1;
+    exec_foreground= 0;
+  }
+
+  if((child_process= fork()) == 0){ //Parte ejecutada por el hijo
+    //Creamos un vector equivalente a char * argv[] pero sin el argumento bg ni argv[0]
+    char* argv_2[num_arguments];
+    for(i= 0; i< num_arguments-1; i++)
+        argv_2[i]= argv[i+1];
+    argv_2[num_arguments-1]= NULL;
+
+    if(execv(argv[1], argv_2) == -1){
+      fprintf(stderr, "%s\n", "Error %d en execv");
+      exit(EXIT_FAILURE);
+    }
+  }
+  //Part ejecutada por el padre
+  else{
+    printf("Soy el proceso padre y mi pid es: %d\n", getpid());
+
+    /*Si el último argumento no es *bg*, se ejecuta en primer plano, por lo
+    que el padre se espera al hijo.* /
+    if(exec_foreground)
+      waitpid(child_process,&status,0);
+  }
 }
 ~~~
 ### Extra
