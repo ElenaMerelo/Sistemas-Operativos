@@ -16,12 +16,9 @@ int is_prime(int number){
   }
   return 1;
 }
-int main(int argc, char *argv[]){
-  if(argc != 3 || argv[1] > argv[2]){
-    fprintf(stderr, "%s\n","Modo de ejecución: ./ejer5 número_natural_1 número_natural_2, con el primero menor o igual que el segundo" );
-    exit(EXIT_FAILURE);
-  }
 
+int main(int argc, char *argv[]){
+  //No comprobamos que los argumentos sean correctos ya que eso se hace en el maestro
   int start= atoi(argv[1]);
   int end= atoi(argv[2]);
   //Recorremos el intervalo pasado como argumento buscando los primos que contiene
@@ -33,5 +30,5 @@ int main(int argc, char *argv[]){
       write(STDOUT_FILENO, &i, sizeof(int));
     }
   }
-  exit(0);
+  exit(1);
 }

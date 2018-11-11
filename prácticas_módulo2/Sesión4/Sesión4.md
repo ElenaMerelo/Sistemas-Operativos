@@ -1,7 +1,7 @@
 ## Sesión 4. Comunicación entre procesos utilizando cauces
 ### Actividad 4.1 Trabajo con cauces con nombre
 **Ejercicio 1.** Consulte en el manual las llamadas al sistema para la creación de archivos especiales en general (mknod) y la específica para archivos FIFO (mkfifo). Pruebe a ejecutar el siguiente código correspondiente a dos programas que modelan el problema del productor/consumidor, los cuales utilizan como mecanismo de comunicación un cauce FIFO.
-Determine en qué orden y manera se han de ejecutar los dos programas para su correcto funcionamiento y cómo queda reflejado en el sistema que estamos utilizando un cauce FIFO. **No estoy muy segura, pero primero ha de ejecutarse el consumidorFIFO, escribiendo desde la terminal `gcc consumidorFIFO.c -o consumidorFIFO`, luego `gcc productorFIFO.c -o productorFIFO`, y ejecutando `./consumidorFIFO` se queda como en bucle infinito. Abrimos entonces otra terminal y ejecutamos `./productorFIFO mensaje` tantas veces como queramos hasta poner `./productorFIFO fin`, y vemos como en la terminal en la que tenemos el consumidor FIFO van apareciendo los mensajes, y con fin se cierra el cauce. En los otros archivos escribe cosas raras.**
+Determine en qué orden y manera se han de ejecutar los dos programas para su correcto funcionamiento y cómo queda reflejado en el sistema que estamos utilizando un cauce FIFO. **Primero ha de ejecutarse el consumidorFIFO, escribiendo desde la terminal `gcc consumidorFIFO.c -o consumidorFIFO`, luego `gcc productorFIFO.c -o productorFIFO`, y ejecutando `./consumidorFIFO` se queda como en bucle infinito. Abrimos entonces otra terminal y ejecutamos `./productorFIFO mensaje` tantas veces como queramos hasta poner `./productorFIFO fin`, y vemos como en la terminal en la que tenemos el consumidor FIFO van apareciendo los mensajes, y con fin se cierra el cauce.**
 ~~~c
 //consumidorFIFO.c
 //Consumidor que usa mecanismo de comunicacion FIFO
@@ -171,7 +171,7 @@ int main(int argc, char *argv[]){
   return(0);
 }
 ~~~
-**Ejercicio 4.** Compare el siguiente programa con el anterior y ejecútelo. Describa la principal diferencia, si existe, tanto en su código como en el resultado de la ejecución.**Al ejecutar el programa resulta lo mismo que el anterior, la única diferencia es que en vez de usar `close(STDOUT_FILENO)` o `close(STDIN_FILENO)` emplea `dup2(fd[1], STDOUT_FILENO)` o `dup2(fd[1], STDIN_FILENO)` respectivamente, pero es que son equivalentes ambas cosas; la cabecera de dup2 es `int dup2(int oldfd, int newfd)`, crea una copia de oldfd usando el número especificado en newfd. Si newfd había sido abierto con anterioridad, se cierra antes de volver a ser usado. Por otro lado, close() cierra un descriptor de archivo, de manera que no se refiera a ningún archivo y pueda volver a ser usado.**
+**Ejercicio 4.** Compare el siguiente programa con el anterior y ejecútelo. Describa la principal diferencia, si existe, tanto en su código como en el resultado de la ejecución.**Al ejecutar el programa resulta lo mismo que el anterior, la única diferencia es que en vez de usar `close(STDOUT_FILENO)` o `close(STDIN_FILENO)` emplea `dup2(fd[1], STDOUT_FILENO)` o `dup2(fd[1], STDIN_FILENO)` respectivamente, pero es que son equivalentes ambas cosas; la cabecera de dup2 es `int dup2(int oldfd, int newfd)`, crea una copia de oldfd usando el número especificado en newfd. Si newfd había sido abierto con anterioridad, se cierra antes de volver a ser usado. Por otro lado, close() cierra un descriptor de archivo, de manera que no se refiera a ningún archivo y pueda volver a ser usado. La única diferencia entre dup() vs dup2() es que dup asigna el descriptor más pequeño disponible; mientras que dup2 te deja elegir el que quieras; se puede incluso reemplazar uno existente. En este caso, hacemos lo segundo.**
 ~~~c
 /*
 tarea8.c
@@ -223,7 +223,6 @@ encontrado como un dato entero (4 bytes) que escribe en la salida estándar, la 
 
 ~~~c
 //maestro.c
-
 #include <stdio.h>  //fprintf() y printf()
 #include <unistd.h> //pipe(), exec()
 #include <stdlib.h> //atoi(), exit()
@@ -235,7 +234,7 @@ int main(int argc, char *argv[]){
   int fd_1[2], fd_2[2];
   char middle_char_1[10], middle_char_2[10];
 
-  if(argc != 3 || start > end){
+  if(argc != 3 || start > end || start < 0 || end < 0){
     fprintf(stderr, "%s\n","Modo de ejecución: ./ejer5 número_natural_1 número_natural_2, con el primero menor o igual que el segundo" );
     exit(EXIT_FAILURE);
   }
@@ -258,9 +257,9 @@ int main(int argc, char *argv[]){
   }
 
   //Dividimos el intervalo pasado como argumento en dos, guardando el valor medio en la siguiente variable:
-  int middle_1= (start + end)/2 -1;
+  int middle_1= (start + end)/2;
   int middle_2= middle_1 +1;
-
+  //------------------------------ ESCLAVO 1 -----------------------------------//
   //Redireccionamos la salida estándar a un cauce sin nombre para los dos procesos hijo
   if (child_process_1 == 0) {
     //Cerramos el descriptor de lectura de cauce en el proceso hijo 1
@@ -271,14 +270,27 @@ int main(int argc, char *argv[]){
     dup2(fd_1[1],STDOUT_FILENO);
 
     //Convertimos int middle a char middle_[], tipo que acepta execl como argumento
-    snprintf(middle_char_1, sizeof(int), "%d", middle_1);
+    sprintf(middle_char_1,"%d", middle_1);
 
     if(execl("./esclavo", "esclavo", argv[1], middle_char_1, NULL) == -1){
       perror("\nError en el primer execl");
       exit(EXIT_FAILURE);
     }
   }
+  else { //Parte ejecutada por el padre al ser child_process_1 != 0
+    //Cerramos el descriptor de escritura en cauce situado en el proceso padre
+    close(fd_1[1]);
 
+    int bytes_1, primes_1;
+
+    printf("\nPrimos del primer proceso hijo: \n");
+    while(bytes_1 = read(fd_1[0], &primes_1, sizeof(int)) > 0)
+      printf("%d\n", primes_1);
+
+  }
+
+
+//------------------------------ ESCLAVO 2 -----------------------------------//
   //Creamos el segundo proceso hijo y procedemos de manera análoga al anterior
   if((child_process_2= fork()) == -1){
     perror("Error en el segundo fork");
@@ -295,7 +307,7 @@ int main(int argc, char *argv[]){
     dup2(fd_2[1], STDOUT_FILENO);
 
     //Convertimos int middle a char middle_[], tipo que acepta execl como argumento
-    snprintf(middle_char_2, sizeof(int), "%d", middle_2);
+    sprintf(middle_char_2,"%d", middle_2);
 
     if(execl("./esclavo","esclavo", middle_char_2, argv[2], NULL) == -1){
       perror("\nError en el segundo execl");
@@ -305,23 +317,18 @@ int main(int argc, char *argv[]){
 
   else { //Parte ejecutada por el padre al ser child_process_1 != 0
     //Cerramos el descriptor de escritura en cauce situado en el proceso padre
-    close(fd_1[1]);
     close(fd_2[1]);
 
-    int bytes_1, bytes_2, primes_1, primes_2;
-
-    printf("\nPrimos del primer proceso hijo: \n");
-    while(bytes_1 = read(fd_1[0], &primes_1, sizeof(int)) > 0)
-      printf("%d\n", primes_1);
+    int bytes_2, primes_2;
 
     printf("\nPrimos del segundo proceso hijo: \n");
     while(bytes_2 = read(fd_2[0], &primes_2, sizeof(int)) > 0)
       printf("%d\n", primes_2);
 
   }
-
-  //return(EXIT_SUCCESS);
+  exit(1);
 }
+
 ~~~
 ~~~c
 //esclavo.c
@@ -340,12 +347,8 @@ int is_prime(int number){
   }
   return 1;
 }
-int main(int argc, char *argv[]){
-  if(argc != 3 || argv[1] > argv[2]){
-    fprintf(stderr, "%s\n","Modo de ejecución: ./ejer5 número_natural_1 número_natural_2, con el primero menor o igual que el segundo" );
-    exit(EXIT_FAILURE);
-  }
 
+int main(int argc, char *argv[]){
   int start= atoi(argv[1]);
   int end= atoi(argv[2]);
   //Recorremos el intervalo pasado como argumento buscando los primos que contiene
@@ -358,7 +361,7 @@ int main(int argc, char *argv[]){
       write(STDOUT_FILENO, &i, sizeof(int));
     }
   }
-  exit(0);
+  exit(1);
 }
 ~~~
 ### Extra

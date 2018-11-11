@@ -46,7 +46,7 @@ int main(int argc, char *argv[]){
   int fd_1[2], fd_2[2];
   char middle_char_1[10], middle_char_2[10];
 
-  if(argc != 3 || start > end){
+  if(argc != 3 || start > end || start < 0 || end < 0){
     fprintf(stderr, "%s\n","Modo de ejecución: ./ejer5 número_natural_1 número_natural_2, con el primero menor o igual que el segundo" );
     exit(EXIT_FAILURE);
   }
@@ -69,9 +69,9 @@ int main(int argc, char *argv[]){
   }
 
   //Dividimos el intervalo pasado como argumento en dos, guardando el valor medio en la siguiente variable:
-  int middle_1= (start + end)/2 -1;
+  int middle_1= (start + end)/2;
   int middle_2= middle_1 +1;
-
+  //------------------------------ ESCLAVO 1 -----------------------------------//
   //Redireccionamos la salida estándar a un cauce sin nombre para los dos procesos hijo
   if (child_process_1 == 0) {
     //Cerramos el descriptor de lectura de cauce en el proceso hijo 1
@@ -82,14 +82,27 @@ int main(int argc, char *argv[]){
     dup2(fd_1[1],STDOUT_FILENO);
 
     //Convertimos int middle a char middle_[], tipo que acepta execl como argumento
-    snprintf(middle_char_1, sizeof(int), "%d", middle_1);
+    sprintf(middle_char_1,"%d", middle_1);
 
     if(execl("./esclavo", "esclavo", argv[1], middle_char_1, NULL) == -1){
       perror("\nError en el primer execl");
       exit(EXIT_FAILURE);
     }
   }
+  else { //Parte ejecutada por el padre al ser child_process_1 != 0
+    //Cerramos el descriptor de escritura en cauce situado en el proceso padre
+    close(fd_1[1]);
 
+    int bytes_1, primes_1;
+
+    printf("\nPrimos del primer proceso hijo: \n");
+    while(bytes_1 = read(fd_1[0], &primes_1, sizeof(int)) > 0)
+      printf("%d\n", primes_1);
+
+  }
+
+
+//------------------------------ ESCLAVO 2 -----------------------------------//
   //Creamos el segundo proceso hijo y procedemos de manera análoga al anterior
   if((child_process_2= fork()) == -1){
     perror("Error en el segundo fork");
@@ -106,7 +119,7 @@ int main(int argc, char *argv[]){
     dup2(fd_2[1], STDOUT_FILENO);
 
     //Convertimos int middle a char middle_[], tipo que acepta execl como argumento
-    snprintf(middle_char_2, sizeof(int), "%d", middle_2);
+    sprintf(middle_char_2,"%d", middle_2);
 
     if(execl("./esclavo","esclavo", middle_char_2, argv[2], NULL) == -1){
       perror("\nError en el segundo execl");
@@ -116,20 +129,14 @@ int main(int argc, char *argv[]){
 
   else { //Parte ejecutada por el padre al ser child_process_1 != 0
     //Cerramos el descriptor de escritura en cauce situado en el proceso padre
-    close(fd_1[1]);
     close(fd_2[1]);
 
-    int bytes_1, bytes_2, primes_1, primes_2;
-
-    printf("\nPrimos del primer proceso hijo: \n");
-    while(bytes_1 = read(fd_1[0], &primes_1, sizeof(int)) > 0)
-      printf("%d\n", primes_1);
+    int bytes_2, primes_2;
 
     printf("\nPrimos del segundo proceso hijo: \n");
     while(bytes_2 = read(fd_2[0], &primes_2, sizeof(int)) > 0)
       printf("%d\n", primes_2);
 
   }
-
-  //return(EXIT_SUCCESS);
+  exit(1);
 }
