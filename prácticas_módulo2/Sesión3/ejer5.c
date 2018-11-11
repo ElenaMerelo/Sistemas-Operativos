@@ -1,10 +1,3 @@
-/*Ejercicio 5. Implementa una modificación sobre el anterior programa en la que el proceso
-padre espera primero a los hijos creados en orden impar (1º,3º,5º) y después a los hijos pares (2º
-y 4º).
-Compilación y enlazado: gcc ejer5.c -o ejer5
-Ejecución: ./ejer5
-Autora: Elena Merelo Molina
-*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -25,32 +18,21 @@ int main(){
       fprintf(stdout, "\nSoy el hijo %d con PID %d y PPID %d\n", i, getpid(), getppid());
       exit(0);
     }
-  }
+}
   /*Como hemos creado 5 hijos, iteramos 5 veces sobre wait, cada vez que se detecta que ha acabado uno,
   informa del PID del hijo que ha acabado e informa de los hijos que quedan vivos. No hace
-  falta comprobar dentro del for if(child_process > 0) al haber puesto exit(0) al crear los procesos hijos.
-  <status> mantiene información codificada a nivel de bit sobre el motivo de finalización del proceso hijo
-  que puede ser el número de señal o 0 si alcanzó su finalización normalmente.
-  Así, el proceso padre recupera el valor especificado por el proceso hijo como argumento
-  de la llamada exit(), pero desplazado 1 byte porque el sistema incluye en el byte menos
-  significativo el código de la señal que puede estar asociada a la terminación del hijo.
-  Por eso se utiliza status>>8 de forma que obtenemos el valor del argumento de exit() del hijo.*/
-
-  //Esperamos a los hijos impares, que se corresponden con las posiciones pares del vector.
-  for(int i= 0; i< 5; i++){
-    if(i%2 == 0){
-      waitpid(children[i], &status, 0);
-      printf("\nHa finalizado mi hijo con PID %d y estado %d\n", children[i], status>>8);
-      printf("\nMe quedan %d hijos vivos, éste es el hijo %d\n", --num_processes, i+1);
-    }
+  falta comprobar dentro del for if(child_process > 0) al haber puesto exit(0) al crear los procesos hijos.*/
+  //Esperamos a los hijos impares
+  for(int i= 1; i<= 5; i+= 2){
+    waitpid(children[i], &status, 0);
+    printf("\nHa finalizado mi hijo con PID %d y estado %d\n", children[i], status);
+    printf("\nMe quedan %d hijos vivos, éste es el hijo %d\n", --num_processes, i);
   }
 
-  //Esperamos a los hijos pares, que se corresponden con las posiciones impares del vector
-  for(int i= 0; i< 5; i++){
-    if(i%2 != 0){
-      waitpid(children[i], &status, 0);
-      printf("\nHa finalizado mi hijo con PID %d y estado %d\n", children[i], status>>8);
-      printf("\nMe quedan %d hijos vivos, éste es el hijo %d\n", --num_processes, i+1);
-    }
+  for(int i= 2; i<= 4; i+=2){
+    //Esperamos a los hijos pares
+    waitpid(children[i], &status, 0);
+    printf("\nHa finalizado mi hijo con PID %d y estado %d\n", children[i], status);
+    printf("\nMe quedan %d hijos vivos, éste era el hijo %d\n", --num_processes, i);
   }
 }

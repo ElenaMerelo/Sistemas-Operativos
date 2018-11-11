@@ -31,16 +31,16 @@ void parent_process(int number){
 }
 
 int main(int argc, char* argv[]){
-pid_t pid;
+  pid_t pid;
 
-if(argc != 2 || atoi(argv[1]) == 0){
-  printf("\nHa de introducir un número entero");
-  exit(EXIT_FAILURE);
-}
-if((pid= fork()) == 0)  //Si se crea el proceso hijo
-  child_process(atoi(argv[1]));
+  if(argc != 2 || atoi(argv[1]) == 0){
+    printf("\nHa de introducir un número entero");
+    exit(EXIT_FAILURE);
+  }
+  if((pid= fork()) == 0)  //Si se crea el proceso hijo
+    child_process(atoi(argv[1]));
 
-parent_process(atoi(argv[1]));
+  parent_process(atoi(argv[1]));
 }
 ~~~
 Otra forma de hacerlo, no tan correcta, está en el archivo ejer1_sesion3.c
@@ -62,39 +62,40 @@ int global=6;
 char buf[]="\nPrueba usando fork()";
 
 int main(int argc, char *argv[]){
-int var;
-pid_t pid;
-var=88;
-if(write(STDOUT_FILENO, buf, sizeof(buf)+1) != sizeof(buf)+1) {
-  perror("\nError en write");
-  exit(-1);
-}
-/*Esta llamada con  _IONBF hace que la información aparezca en el archivo destino, en este caso
-stdout, tan pronto como se escribe, que el flujo de salida sea "unbuffered". Se usa pues para cambiar el buffer de un flujo de salida.*/
-if(setvbuf(stdout, NULL, `_IONBF, 0)){  // La comilla invertida se pone para que aparezca bien en markdown, quitarla para compilar el programa
-    perror("\nError en setvbuf");
-}
+  int var;
+  pid_t pid;
+  var=88;
+  if(write(STDOUT_FILENO, buf, sizeof(buf)+1) != sizeof(buf)+1) {
+    perror("\nError en write");
+    exit(-1);
+  }
+  /*Esta llamada con  _IONBF hace que la información aparezca en el archivo destino, en este caso
+  stdout, tan pronto como se escribe, que el flujo de salida sea "unbuffered". Se usa pues para cambiar el buffer de un flujo de salida.*/
+  if(setvbuf(stdout, NULL, `_IONBF, 0)){  // La comilla invertida se pone para que aparezca bien en markdown, quitarla para compilar el programa
+      perror("\nError en setvbuf");
+  }
 
-printf("\nMensaje previo a la ejecución de fork");
-if((pid= fork())< 0){
-  perror("\nError en el fork");
-  exit(-1);
-}
-else if(pid==0){
-  //proceso hijo ejecutando el programa
-  global++;
-  var++;
-}
-else //proceso padre ejecutando el programa
-  sleep(1); //Importante! Detecta el fin del proceso hijo y continúa. Si no se pone los valores del padre no se modificarán o no aparecerán, no funcionará correctamente
-//Mostramos por pantalla el pid del proceso padre y los valores global y variable. Tendrán
-//un valor distinto a los del proceso padre al haber sido modificados una vez hecho el fork(), y
-//hace dicha Modificación solo para el proceso hijo
-printf("\npid= %d, global= %d, var= %d\n", getpid(),global,var);
-exit(0);
+  printf("\nMensaje previo a la ejecución de fork");
+  if((pid= fork())< 0){
+    perror("\nError en el fork");
+    exit(-1);
+  }
+  else if(pid==0){
+    //proceso hijo ejecutando el programa
+    global++;
+    var++;
+  }
+  else //proceso padre ejecutando el programa
+    sleep(1); //Importante! Detecta el fin del proceso hijo y continúa. Si no se pone los valores del padre no se modificarán o no aparecerán, no funcionará correctamente
+  //Mostramos por pantalla el pid del proceso padre y los valores global y variable. Tendrán
+  //un valor distinto a los del proceso padre al haber sido modificados una vez hecho el fork(), y
+  //hace dicha Modificación solo para el proceso hijo
+  printf("\npid= %d, global= %d, var= %d\n", getpid(),global,var);
+  exit(0);
 }
 
 ~~~
+
 *Nota 1*: El núcleo no realiza buffering de salida con la llamada al sistema `write`. Esto quiere
 decir que cuando usamos `write(STDOUT_FILENO,buf,size)`, los datos se escriben directamente
 en la salida estándar sin ser almacenados en un buffer temporal. Sin embargo, el núcleo sí realiza buffering de salida en las funciones de la biblioteca estándar de E/S del C, en la cual está incluida `printf`. Para deshabilitar el buffering en la biblioteca estándar de E/S se utiliza la función:
@@ -120,24 +121,24 @@ uno de los siguientes fragmentos de código. Comprueba tu solución implementand
 Jerarquía de procesos tipo 1
 */
 for (i=1; i < nprocs; i++) {
-if ((childpid= fork()) == -1) {
-  fprintf(stderr, "Could not create child %d: %s\n",i,strerror(errno));
-  exit(-1);
-}
+  if ((childpid= fork()) == -1) {
+    fprintf(stderr, "Could not create child %d: %s\n",i,strerror(errno));
+    exit(-1);
+  }
 }
 if (childpid) //Ésto está mal. El break ha de estar dentro del for, si no, no hay nada de lo que salir, da error al compilar.
-break;
+  break;
 /*
 Jerarquía de procesos tipo 2
 */
 for (i=1; i < nprocs; i++) {
-if ((childpid= fork()) == -1) {
-  fprintf(stderr, "Could not create child %d: %s\n",i,strerror(errno));
-  exit(-1);
-}
+  if ((childpid= fork()) == -1) {
+    fprintf(stderr, "Could not create child %d: %s\n",i,strerror(errno));
+    exit(-1);
+  }
 }
 if (!childpid)  //Same as before
-break;
+  break;
 ~~~
 ** Mi versión, comentada: **
 ~~~c
@@ -189,6 +190,7 @@ for (int i= 1; i < nprocs; i++) {
 }
 }
 ~~~
+
 ### Actividad 3.2 Trabajo con las llamadas al sistema `wait`, `waitpid` y `exit`
 **Ejercicio 4.** Implementa un programa que lance cinco procesos hijo. Cada uno de ellos se identificará en la salida estándar, mostrando un mensaje del tipo Soy el hijo PID. El proceso padre simplemente tendrá que esperar la finalización de todos sus hijos y cada vez que detecte la finalización de uno de sus hijos escribirá en la salida estándar un mensaje del tipo:
 Acaba de finalizar mi hijo con <PID>
@@ -203,26 +205,26 @@ Sólo me quedan <NUM_HIJOS> hijos vivos
 #include <sys/wait.h>
 
 int main(){
-int num_processes= 5, status;
-pid_t child_process;
+  int num_processes= 5, status;
+  pid_t child_process;
 
-for(int i= 0; i< num_processes; i++){
-  if((child_process= fork()) == -1){  //Si no se crea correctamente el hijo imprimimos el correspondiente mensaje de error
-    fprintf(stderr, "\n%s\n", "Error en fork" );
-    exit(EXIT_FAILURE);
-  }
-  if(child_process == 0){ //Si se ha creado correctamente
-    //Parte ejecutada por el proceso hijo
-    fprintf(stdout, "\nSoy el hijo %d con PID %d y PPID %d\n", i, getpid(), getppid());
-    exit(0);
-  }
+  for(int i= 0; i< num_processes; i++){
+    if((child_process= fork()) == -1){  //Si no se crea correctamente el hijo imprimimos el correspondiente mensaje de error
+      fprintf(stderr, "\n%s\n", "Error en fork" );
+      exit(EXIT_FAILURE);
+    }
+    if(child_process == 0){ //Si se ha creado correctamente
+      //Parte ejecutada por el proceso hijo
+      fprintf(stdout, "\nSoy el hijo %d con PID %d y PPID %d\n", i, getpid(), getppid());
+      exit(0);
+    }
 
-  else{
-    //Parte ejecutada por el proceso padre
-    child_process = wait(&status);
-    fprintf(stdout, "\nAcaba de finalizar mi hijo con PID %d\n", child_process);
+    else{
+      //Parte ejecutada por el proceso padre
+      child_process = wait(&status);
+      fprintf(stdout, "\nAcaba de finalizar mi hijo con PID %d\n", child_process);
+    }
   }
-}
 }
 ~~~
 + Forma 2: **Se crean cinco hijos, iteramos cinco veces sobre el wait y cada vez que finaliza uno se informa del PID del hijo que ha terminado y de los hijos que quedan vivos.**
@@ -259,8 +261,7 @@ for(int i= 4; i>= 0; i--){
 }
 }
 ~~~
-**Ejercicio 5.** Implementa una modificación sobre el anterior programa en la que el proceso padre espera primero a los hijos creados en orden impar (1º,3º,5º) y después a los hijos pares (2º
-y 4º).
+**Ejercicio 5.** Implementa una modificación sobre el anterior programa en la que el proceso padre espera primero a los hijos creados en orden impar (1º,3º,5º) y después a los hijos pares (2º y 4º).
 ~~~c
 #include <stdlib.h>
 #include <stdio.h>
@@ -269,39 +270,36 @@ y 4º).
 #include <sys/wait.h>
 
 int main(){
-int num_processes= 5, status, children[num_processes];  //En éste último vamos almacenando los PIDs de los procesos hijos
-//pid_t child_process;
+  int num_processes= 5, status, children[num_processes];  //En éste último vamos almacenando los PIDs de los procesos hijos
+  //pid_t child_process;
 
-for(int i= 0; i< num_processes; i++){
-  if((children[i]= fork()) == -1){  //Si no se crea correctamente el hijo imprimimos el correspondiente mensaje de error
-    fprintf(stderr, "\n%s\n", "Error en fork" );
-    exit(EXIT_FAILURE);
-  }
-  if(children[i] == 0){ //Si se ha creado correctamente
-    //Parte ejecutada por el proceso hijo
-    fprintf(stdout, "\nSoy el hijo %d con PID %d y PPID %d\n", i, getpid(), getppid());
-    exit(0);
-  }
+  for(int i= 0; i< num_processes; i++){
+    if((children[i]= fork()) == -1){  //Si no se crea correctamente el hijo imprimimos el correspondiente mensaje de error
+      fprintf(stderr, "\n%s\n", "Error en fork" );
+      exit(EXIT_FAILURE);
+    }
+    if(children[i] == 0){ //Si se ha creado correctamente
+      //Parte ejecutada por el proceso hijo
+      fprintf(stdout, "\nSoy el hijo %d con PID %d y PPID %d\n", i, getpid(), getppid());
+      exit(0);
+    }
 }
-/*Como hemos creado 5 hijos, iteramos 5 veces sobre wait, cada vez que se detecta que ha acabado uno,
-informa del PID del hijo que ha acabado e informa de los hijos que quedan vivos. No hace
-falta comprobar dentro del for if(child_process > 0) al haber puesto exit(0) al crear los procesos hijos.*/
-//Esperamos a los hijos impares, que se corresponden con las posiciones pares del vector
-for(int i= 0; i< 5; i++){
-  if(i%2 == 0){
+  /*Como hemos creado 5 hijos, iteramos 5 veces sobre wait, cada vez que se detecta que ha acabado uno,
+  informa del PID del hijo que ha acabado e informa de los hijos que quedan vivos. No hace
+  falta comprobar dentro del for if(child_process > 0) al haber puesto exit(0) al crear los procesos hijos.*/
+  //Esperamos a los hijos impares
+  for(int i= 1; i<= 5; i+= 2){  
     waitpid(children[i], &status, 0);
     printf("\nHa finalizado mi hijo con PID %d y estado %d\n", children[i], status);
-    printf("\nMe quedan %d hijos vivos, éste es el hijo %d\n", --num_processes, i+1);
+    printf("\nMe quedan %d hijos vivos, éste es el hijo %d\n", --num_processes, i);
   }
-}
-for(int i= 0; i< 5; i++){
-  //Esperamos a los hijos pares, que se corresponden con las posiciones impares del vector
-  if(i%2 != 0){
+  
+  for(int i= 0; i<= 4; i+=2){
+    //Esperamos a los hijos pares
     waitpid(children[i], &status, 0);
     printf("\nHa finalizado mi hijo con PID %d y estado %d\n", children[i], status);
-    printf("\nMe quedan %d hijos vivos, éste es el hijo %d\n", --num_processes, i+1);
+    printf("\nMe quedan %d hijos vivos, éste es el hijo %d\n", --num_processes, i);
   }
-}
 }
 ~~~
 ### Actividad 3.3 Trabajo con la familia de llamadas al sistema exec

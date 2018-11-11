@@ -8,7 +8,6 @@ Ejecución: ./ejer1 *whatever*
 Autora: Elena Merelo Molina
 */
 #include <unistd.h> //Para fork()
-//#include <errno.h>
 #include <stdio.h>  //Para printf()
 #include <ctype.h>  //Para isdigit()
 #include <string.h> //Para poder usar strlen()

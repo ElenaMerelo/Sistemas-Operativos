@@ -16,13 +16,16 @@ int main(int argc, char *argv[]){
   int var;
   pid_t pid;
   var=88;
+
   if(write(STDOUT_FILENO, buf, sizeof(buf)+1) != sizeof(buf)+1) {
     perror("\nError en write");
     exit(-1);
   }
+
   /*Ésta llamada con  _IONBF hace que la información aparezca en el archivo destino, en este caso
   stdout, tan pronto como se escribe, que el flujo de salida sea "unbuffered". Se usa pues para cambiar
   el buffer de un flujo de salida.*/
+
   if(setvbuf(stdout, NULL, _IONBF, 0)){
       perror("\nError en setvbuf");
   }

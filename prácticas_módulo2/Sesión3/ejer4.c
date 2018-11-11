@@ -20,6 +20,7 @@ Autora: Elena Merelo Molina
 int main(){
   int num_processes= 5, status;
   pid_t child_process;
+  //setvbuf(stdout, (char*)NULL, _IONBF, 0);
 
   for(int i= 0; i< num_processes; i++){
     if((child_process= fork()) == -1){  //Si no se crea correctamente el hijo imprimimos el correspondiente mensaje de error
@@ -32,7 +33,7 @@ int main(){
       exit(0);
     }
 
-    else{
+   else{
       //Parte ejecutada por el proceso padre
       child_process = wait(&status);
       fprintf(stdout, "\nAcaba de finalizar mi hijo con PID %d\n", child_process);
@@ -41,7 +42,7 @@ int main(){
   /*Como hemos creado 5 hijos, iteramos 5 veces sobre wait, cada vez que se detecta que ha acabado uno,
   informa del PID del hijo que ha acabado e informa de los hijos que quedan vivos. No hace
   falta comprobar dentro del for if(child_process > 0) al haber puesto exit(0) al crear los procesos hijos.*/
-/*  for(int i= 4; i>= 0; i--){
+ /*for(int i= 4; i>= 0; i--){
     child_process= wait(&status);
     printf("\nHa finalizado mi hijo con PID %d", child_process);
     printf("\nMe quedan %d hijos vivos",i);
