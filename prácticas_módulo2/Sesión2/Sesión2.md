@@ -53,7 +53,7 @@ int main(int argc, char *argv[]){
   return 0;
 }
 ~~~
-**Este programa crea dos archivos, "archivo1" (en el que solo se puede escribir, para el cual el grupo tiene permiso de ejecución, lectura y escritura, especificando O_TRUNC por si el archivo ya existía, para vaciarlo) y "archivo2" (puesto todo a 0 con umask(0), también truncado, solo de escritura, con permisos de lectura, escritura y ejecucion para el grupo), y luego cambiamos los permisos, de manera que el grupo ya no puede ejecutar "archivo1" y estableciendo el bit de grupo, y dándole permisos de lectura, escritura y ejecución al usuario, de lectura y escritura al grupo y de lectura a otros en "archivo2". Como consta en: https://github.com/DGIIMUnderground/DGIIM2/blob/master/C1/SO/Practicas/ModuloII/Sesion2.md:
+**Este programa crea dos archivos, "archivo1" (en el que solo se puede escribir, para el cual el grupo tiene permiso de ejecución, lectura y escritura, especificando O_TRUNC por si el archivo ya existía, para vaciarlo) y "archivo2" (puesto todo a 0 con umask(0), también truncado, solo de escritura, con permisos de lectura, escritura y ejecucion para el grupo), y luego cambiamos los permisos, de manera que el grupo ya no puede ejecutar "archivo1" y estableciendo el bit de grupo, y dándole permisos de lectura, escritura y ejecución al usuario, de lectura y escritura al grupo y de lectura a otros en "archivo2". Más específicamente, como consta en: https://github.com/DGIIMUnderground/DGIIM2/blob/master/C1/SO/Practicas/ModuloII/Sesion2.md:
 
 En archivo1, de primeras se añade lectura escritura y ejecución para el grupo, que al pasarle la máscara ~022, se hace la operación 000 111 000 & 111 101 101 = 000 101 000(Se puede decir que se le quitan los permisos de la máscara). Antes de la llamada a chmod esos son los permisos que tiene archivo1. chmod toma los permisos actuales y les quita el permiso de ejecución al grupo (atributos.st_mode & ~S_IXGRP), para después activar la asignación del GID propietario al GID efectivo. Esta acción, al hacer ls -l se ve codificada con una S en el bit correspondiente a la ejecución del grupo. Por este motivo, tras ejecutar el programa, en archivo1 el comando ls -l nos devuelve la siguiente secuencia: ---r-S---.
 Para archivo2, de primeras open le había asignado unos permisos que, como la máscara estaba establecida a 000 se mantuvieron iguales. Sin embargo al hacer chmod no se tienen en cuenta los permisos que tenía anteriormente, simplemente se le asignan unos nuevos. Se activa la lectura, escritura y ejecución para el usuario y permite lectura y escritura al grupo y lectura para otros. Si no se ha podido cambiar alguno, se sale del programa. Si ha ido bien, termina la ejecución.
@@ -103,7 +103,6 @@ int main(int argc, char *argv[]){
     exit (-1);
   }
 
-  char * endptr;
   int mask = strtol(argv[2], NULL, 8);
   mode_t old_mask;
 
@@ -252,7 +251,7 @@ Autora: Elena Merelo Molina
 #include<stdio.h>
 #include<errno.h>
 
-/*Declaramos las funciones size y total como globales, al no poder pasárselas a las funciones info_dir y nftw como argumento, el
+/*Declaramos las variables size y n_files como globales, al no poder pasárselas a las funciones info_dir y nftw como argumento, el
 prototipo de ambas ha de ser: int nftw(const char *dirpath,
                int (*fn) (const char *fpath, const struct stat *sb,
                           int typeflag, struct FTW *ftwbuf),
@@ -282,7 +281,7 @@ int main(int argc, char *argv[]){
   }
 
   printf("\nLos i-nodos son:");
-  //Si no se pasan argumentos se usa como directorio el actual(también se podría haber puesto get_current_dir_name()), sino el pasado como argumento
+  //Si no se pasan argumentos se usa como directorio el actual(también se podría haber puesto get_current_dir_name()), si no el pasado como argumento
   if(nftw((argc >= 2) ? argv[1] : ".", info_dir, 10, 0) == 0){
     perror("nftw");
   }

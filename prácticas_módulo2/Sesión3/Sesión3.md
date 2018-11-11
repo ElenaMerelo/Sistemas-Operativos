@@ -93,7 +93,6 @@ int main(int argc, char *argv[]){
   printf("\npid= %d, global= %d, var= %d\n", getpid(),global,var);
   exit(0);
 }
-
 ~~~
 
 *Nota 1*: El núcleo no realiza buffering de salida con la llamada al sistema `write`. Esto quiere
@@ -183,11 +182,11 @@ for (int i= 1; i < nprocs; i++) {
   /*En el guión no incluía esta llamada, pero la ponemos para que cada proceso
   tenga asignado un PID y PPID correcto, les de tiempo a terminar de crearse.*/
   wait(NULL);
-  if (!childpid_2)
+  if (!childpid_2){
     //Esta parte se ejecuta por el proceso hijo
     printf("\nChild process %d created. PID: %d, PPID: %d\n", i+1, getpid(), getppid());
     break;
-}
+  }
 }
 ~~~
 
@@ -283,7 +282,7 @@ int main(){
       fprintf(stdout, "\nSoy el hijo %d con PID %d y PPID %d\n", i, getpid(), getppid());
       exit(0);
     }
-}
+  }
   /*Como hemos creado 5 hijos, iteramos 5 veces sobre wait, cada vez que se detecta que ha acabado uno,
   informa del PID del hijo que ha acabado e informa de los hijos que quedan vivos. No hace
   falta comprobar dentro del for if(child_process > 0) al haber puesto exit(0) al crear los procesos hijos.*/
@@ -314,34 +313,35 @@ Trabajo con llamadas al sistema del Subsistema de Procesos conforme a POSIX 2.10
 #include<unistd.h>
 #include<stdio.h>
 #include<errno.h>
-int main(int argc, char *argv[]){
-pid_t pid;
-int estado;
 
-if( (pid=fork())<0) {
-  perror("\nError en el fork");
-  exit(-1);
-}
-else if(pid==0) { //proceso hijo ejecutando el programa
-  //Ejecuta desde /usr/bin/ldd el programa tarea5, mostrando con ldd las bibliotecas dinámicas que precisa
-  if((execl("/usr/bin/ldd","ldd","./tarea5",NULL)<0)){
-    perror("\nError en el execl");
+int main(int argc, char *argv[]){
+  pid_t pid;
+  int estado;
+
+  if( (pid=fork())<0) {
+    perror("\nError en el fork");
     exit(-1);
   }
-}
-//El proceso padre espera a que el estado del hijo cambie
-wait(&estado);
+  else if(pid==0) { //proceso hijo ejecutando el programa
+    //Ejecuta desde /usr/bin/ldd el programa tarea5, mostrando con ldd las bibliotecas dinámicas que precisa
+    if((execl("/usr/bin/ldd","ldd","./tarea5",NULL)<0)){
+      perror("\nError en el execl");
+      exit(-1);
+    }
+  }
+  //El proceso padre espera a que el estado del hijo cambie
+  wait(&estado);
 
-/*<estado> mantiene información codificada a nivel de bit sobre el motivo de
-finalización del proceso hijo que puede ser el número de señal o 0 si alcanzó
-su finalización normalmente. Mediante la variable estado de wait(), el proceso
-padre recupera el valor especificado por el proceso hijo como argumento de la
-llamada exit(), pero desplazado 1 byte porque el sistema incluye en el byte
-menos significativo el código de la señal que puede estar asociada a la terminación
-del hijo. Por eso se utiliza estado>>8, de forma que obtenemos el valor del argumento
-de exit() del hijo.*/
-printf("\nMi hijo %d ha finalizado con el estado %d\n", pid, estado>>8);
-exit(0);
+  /*<estado> mantiene información codificada a nivel de bit sobre el motivo de
+  finalización del proceso hijo que puede ser el número de señal o 0 si alcanzó
+  su finalización normalmente. Mediante la variable estado de wait(), el proceso
+  padre recupera el valor especificado por el proceso hijo como argumento de la
+  llamada exit(), pero desplazado 1 byte porque el sistema incluye en el byte
+  menos significativo el código de la señal que puede estar asociada a la terminación
+  del hijo. Por eso se utiliza estado>>8, de forma que obtenemos el valor del argumento
+  de exit() del hijo.*/
+  printf("\nMi hijo %d ha finalizado con el estado %d\n", pid, estado>>8);
+  exit(0);
 }
 ~~~
 **Ejercicio 7.** Escribe un programa que acepte como argumentos el nombre de un programa, sus argumentos si los tiene, y opcionalmente la cadena “bg”. Nuestro programa deberá ejecutar el programa pasado como primer argumento en foreground si no se especifica la cadena “bg” y en background en caso contrario. Si el programa tiene argumentos hay que ejecutarlo con éstos.
@@ -400,14 +400,14 @@ int main(int argc, char *argv[]){
 ~~~
 **Otra forma de hacer el programa, suponiendo que bg se pone al final sería la siguiente. La anterior forma no siempre funciona, pero ésta sí**
 ~~~c
-//File: ejer_2.c
+//File: ejer7_2.c
 /*Enunciado: Escribe un programa que acepte como argumentos el nombre de un programa,
 sus argumentos si los tiene, y opcionalmente la cadena “bg”. Nuesto programa
 deberá ejecutar el programa pasado como primer argumento en foreground si no se
 especifica la cadena “bg” y en background en caso contrario. Si el programa
 tiene argumentos hay que ejecutarlo con éstos.
-Compilación y enlazado: gcc ejer7.c -o ejer7
-Ejecución: ./ejer7 nombre_programa [argumentos]
+Compilación y enlazado: gcc ejer7_2.c -o ejer7_2
+Ejecución: ./ejer7_2 nombre_programa [argumentos]
 Autora: Elena Merelo Molina
 */
 
@@ -534,11 +534,10 @@ Upon  successful  return, waitid() fills in the following fields of the
    Each  of  these calls sets errno to an appropriate value in the case of
    an error.
 ~~~
->La orden wait espera a que finalice un hijo. Cuando un hijo termina, se almacena en la variable estado que ha terminado, devoldiendo wait el PID del proceso que ha terminado, para almacenarlo en PID. La orden wait espera a que termine un hijo, mientras no termina, actualizo su estado en la variable estado. Si queremos esperar a un hijo concreto, debemos usar la orden waitpid, que nos permite seleccionar el hijo al que queremos esperar. El uso de wait es equivalente a declarar waitpid de la siguiente manera:
+>La orden wait espera a que finalice un hijo. Cuando un hijo termina, se almacena en la variable estado que ha terminado, devolviendo wait el PID del proceso que ha terminado, para almacenarlo en PID. La orden wait espera a que termine un hijo, mientras no termina, actualizo su estado en la variable estado. Si queremos esperar a un hijo concreto, debemos usar la orden waitpid, que nos permite seleccionar el hijo al que queremos esperar. El uso de wait es equivalente a declarar waitpid de la siguiente manera:
 `waitpid(-1, &estado, 0)`
 Por defecto, waitpid espera a que termine el proceso, especificado mediante su PID, dado en el primer argumento, aunque esto puede modificarse mediante opciones especificadas en el tercer argumento.
 
 
 **Crear un hilo:** Para ello usamos `clone()` con los siguientes indicadores:
 `CLONE_VM|CLONE_FILES|CLONE_FS|CLONE_THREAD|CLONE_SIGHAND`. Con ello, el hijo comparte con su padre la memoria virtual, los archivos abiertos, el directorio raíz, el directorio de trabajo y la máscara de creación de archivos, pone al hijo en el mismo grupo del padre, y comparten los manejadores de señales.
-#
