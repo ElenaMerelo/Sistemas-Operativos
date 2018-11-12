@@ -127,6 +127,8 @@ int main(int argc, char *argv[]){
     execlp(argv[1], argv[1], NULL);
   }
   else{
+    // Esperamos a que el hijo termine 
+    while( wait(NULL) == -1);
     close(fd[1]);
 
     //Cerramos la salida estándar asignada al proceso llamador, para que se escriba en el archivo y no ahí
