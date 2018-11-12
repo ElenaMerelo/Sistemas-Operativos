@@ -153,8 +153,7 @@ El tamaño total ocupado por dichos archivos es 2345674 bytes
 /*Función recursiva que, dado un directorio, cuenta los archivos regulares con
 permiso de ejecución para others y group que hay en él y su tamaño. Si encuentra
 un directorio dentro hace lo mismo, y así sucesivamente hasta que no haya más directorios
-ni archivos. Hacemos los punteros constantes para que no se pueda modificar el lugar al
-que apuntan pero sí a lo que apuntan.
+ni archivos.
 */
 void info_dir(const char *pathname, int * reg_files, long long int * total_size, long long int * reg_size){
   DIR * dir= NULL;
@@ -319,4 +318,51 @@ main() {
       printf("current working directory is: %s\n", cwd);
   }
 }
+~~~
+#### Contenido de struct stat:
+~~~c
+struct stat {
+	mode_t			st_mode;
+	ino_t			st_ino;
+	dev_t			st_dev;
+	dev_t			st_rdev;
+	nlink_t			st_nlink;
+	uid_t			st_uid;
+	gid_t			st_gid;
+	off_t			st_size;
+	struct timespec	st_atim;
+	struct timespec	st_mtim;
+	struct timespec st_ctim;
+	blksize_t		st_blksize;
+	blkcnt_t		st_blocks;
+};
+
+The struct stat structure includes at least the following members:
+
+    st_dev – identifier of device containing file
+    st_ino – inode number
+    st_mode – protection mode; see also Unix permissions
+    st_nlink – reference count of hard links
+    st_uid – user identifier of owner
+    st_gid – group identifier of owner
+    st_rdev – device identifier (if special file)
+    st_size – total file size, in bytes
+    st_atime – time of last access
+    st_mtime – time of last modification
+    st_ctime – time of last status change
+    st_blksize – preferred block size for file system I/O, which can depend upon both the system and the type of file system[3]
+    st_blocks – number of blocks allocated in multiples of DEV_BSIZE (usually 512 bytes).
+
+The st_mode field is a bit field. It combines the file access modes and also indicates any special file type. There are many macros to work with the different mode flags and file types.
+~~~
+#### Contenido de struct dirent
+~~~c
+struct dirent {
+    ino_t          d_ino;       /* inode number*/
+    off_t          d_off;       /* offset to the next dirent*/
+    unsigned short d_reclen;    /* length of this record*/
+    unsigned char  d_type;      /* type of file; not supported
+                                   by all file system types*/
+    char           d_name[256]; /* filename*/
+};
 ~~~
