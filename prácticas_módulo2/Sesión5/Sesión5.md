@@ -5,6 +5,7 @@ A continuación se muestra el código fuente de dos programas. El programa send_
 ~~~c
 /*
 send_signal.c
+Para obtener el pid de get_signal, una vez compilado y ejecutándose, usamos pgrep get_signal.
 Trabajo con llamadas al sistema del Subsistema de Procesos conforme a POSIX 2.10
 Utilización de la llamada kill para enviar una señal:
 0: SIGTERM
@@ -154,14 +155,34 @@ int main(int argc, char *argv[]){
   while(1); //Para que siga ejecutándose hasta que reciba una señal que termine el proceso
 }
 ~~~
-**Parece que funciona más o menos bien, pero no termina nunca, se queda siempre en bucle infinito y no he encontrado ningna versión de este programa resuelto que lo solucione. Para terminar el proceso, abrir otra terminal, y buscar el PID del proceso con `ps -ef|grep contador`, siendo contador el nombre de mi ejecutable, y luego escribiendo `kill -p *PID*` matamos al proceso, sino el procesador empieza a sobrecalentarse.**
+**Para comprobar su correcto funcionamiento, una vez compilado el programa con `gcc contador.c -o contador`, nos ponemos a ejecutarlo en background, con lo que obtendremos su PID, y este es el que usamos para mandarle señales, poniendo kill -(señal) PID. Cuando queramos parar, matamos el proceso con kill -9 PID. Ejemplo de ejecución:**
+~~~shell
+./contador &
+[1] 6401
+
+No puedo manejar la señal 9
+No puedo manejar la señal 19
+Esperando el envío de señales...
+○ → kill -SIGINT 6401
+
+La señal 2 se ha recibido 1 veces
+
+○ → kill -SIGHUP 6401
+
+La señal 1 se ha recibido 1 veces
+
+○ → kill -SIGILL 6401
+
+La señal 4 se ha recibido 1 veces
+
+○ → kill -9 6401
+[1]+  Terminado (killed)      ./contador
+~~~
 
 ### Actividad 5.2. Trabajo con las llamadas al sistema sigsuspend y sigprocmask
 
 **Ejercicio 3.** Escribe un programa que suspenda la ejecución del proceso actual hasta que se reciba la señal SIGUSR1.
 ~~~c
-//Escribe un programa que suspenda la ejecución del proceso actual hasta que se reciba la señal SIGUSR1.
-
 #include <signal.h>
 #include <stdio.h>
 
@@ -177,7 +198,6 @@ int main(){
   /*Espera a la señal SIGUSR1, ya que realmente está esperando a todas las señales
   excepto las del set, que son todas menos SIGUSR1.*/
   sigsuspend(&new_mask);
-
 }
 ~~~
 **Ejercicio 4.** Compila y ejecuta el siguiente programa y trata de entender su funcionamiento.
@@ -336,7 +356,9 @@ int main(){
 
   while(1);
 }
+~~~
 
+~~~c
 // tarea10.c
 #include <stdio.h>
 #include <signal.h>

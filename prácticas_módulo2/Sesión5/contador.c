@@ -10,7 +10,7 @@ recibido ese tipo de señal, y un mensaje inicial indicando las señales que no 
 
 /*Vector en el que iremos almacenando las veces que aparece una señal. Le ponemos
 ese tamaño ya que hay 27 señales, desde la 1 a la 27.*/
-int number_of_times[28]= {0};
+int number_of_times[31]= {0};
 
 static void signal_handler(int signum){
   number_of_times[signum]++;
@@ -19,7 +19,6 @@ static void signal_handler(int signum){
 }
 
 int main(int argc, char *argv[]){
-
   //Informamos de las señales que no podemos manejar
   printf("\nNo puedo manejar la señal %d", SIGKILL);
   printf("\nNo puedo manejar la señal %d", SIGSTOP);
@@ -29,7 +28,7 @@ int main(int argc, char *argv[]){
   if(setvbuf(stdout,NULL,_IONBF,0))
     perror("\nError en setvbuf");
 
-  for(int i= 0; i< 28; i++){
+  for(int i= 0; i< 31; i++){
     if(signal(i, signal_handler) < 0){
       printf("\nNo puedo manejar la señal %d\n", i);
       exit(EXIT_FAILURE);

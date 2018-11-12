@@ -18,7 +18,8 @@ int main (int argc, char *argv[]){
   sigset_t conj_mascaras_original;
   struct sigaction act;
 
-  //Iniciamos a 0 todos los elementos de la estructura act. Inicia en 0 los n primeros bits de la estructura atc, donde n = sizeof(act). Es decir, la pone entera a 0. Para más información, consultar el man.
+  //Iniciamos a 0 todos los elementos de la estructura act. Inicia en 0 los
+  //n primeros bits de la estructura atc, donde n = sizeof(act). Es decir, la pone entera a 0.
   memset (&act, 0, sizeof(act));
 
   //Asociamos la función manejador creada al sa_handler de act.
@@ -35,7 +36,7 @@ int main (int argc, char *argv[]){
   //Añadimos SIGTERM al conjunto de mascaras
   sigaddset (&conjunto_mascaras, SIGTERM);
 
-  //Bloqueamos SIGTERM usando la función sigprocmask. Al finalizar el código se explica más detenidamente.
+  //Bloqueamos SIGTERM usando la función sigprocmask.
   if (sigprocmask(SIG_BLOCK, &conjunto_mascaras, &conj_mascaras_original) < 0) {
      perror ("primer sigprocmask");
      exit(EXIT_FAILURE);

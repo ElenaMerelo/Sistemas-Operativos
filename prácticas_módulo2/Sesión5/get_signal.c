@@ -25,7 +25,8 @@ int main(int argc, char *argv[]){
   if(setvbuf(stdout,NULL,_IONBF,0))
     perror("\nError en setvbuf");
 
-  //Inicializamos la estructura sig_USR_na para especificar la nueva acción para la señal.
+  //Inicializamos la estructura sig_USR_na para especificar la nueva
+  //acción para la señal.
   sig_USR_nact.sa_handler= sig_USR_hdlr;
 
   //Inicializa el conjunto de señales dado al conjunto vacío.
