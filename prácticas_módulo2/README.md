@@ -66,3 +66,15 @@
     + Programa que verifica que el kernel comprueba que puede darse una situación de interbloqueo en el bloqueo de archivos. (`ejer3.c`).
 
     + Programa que se asegura de que solo hay una instancia de él en ejecución en un momento dado. (`ejer4.c`).
+
+    + Programa  que crea un archivo denominado Archivo y los rellena con nulos, creando una proyección compartida del archivo para que los cambios se mantengan. Una vez establecida la proyección, copia en la memoria asignada a la misma el mensaje “Hola Mundo\n”. Tras finalizar el programa, podemos visualizar el archivo para ver cual es el contenido: la cadena “Hola Mundo\n”. (`tarea14.c`).
+
+    + Programa que se usa para visualizar un archivo completo, que pasamos como primer argumento (similar a la orden cat) y muestra el contenido del byte cuyo desplazamiento se pasa como segundo argumento. Vemos así cómo, una vez establecida la proyección, podemos acceder a los datos que contiene con cualquier mecanismo para leer de memoria. (`tarea15.c`).
+
+    + Programa donde un proceso padre crea una proyección que se utiliza para almacenar un valor. El padre asignará valor a cnt y el hijo solo leerá el valor asignado por el padre (lo hacemos así -solo lectura en el hijo- para evitar condiciones de carrera y así evitarnos tener que introducir un mecanismo de sincronización para acceder al contador). También podemos ver cómo el archivo contiene el valor modificado del padre. (`tarea16.c`).
+
+    + Programa que implementa una proyección anónima. (`tarea17.c`).
+
+    + Proyección anónima con `/dev/zero`. (`tarea18.c`).
+
+    + Programa que muestra la forma habitual de manejar un archivo que está creciendo: especifica una proyección mayor que el archivo, tiene en cuenta su tamaño actual (asegurándonos de no hacer referencias a posiciones posteriores al fin de archivo), y deja que se incremente el tamaño del archivo conforme se escribe en él. (`tarea19.c`).
