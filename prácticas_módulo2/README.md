@@ -1,39 +1,68 @@
-### Things to remember
-#### struct stat
-~~~c
-struct stat {
-dev_t st_dev; /*no de dispositivo (filesystem)*/
-dev_t st_rdev; /*no de dispositivo para archivos especiales*/
-ino_t st_ino; /*no de inodo*/
-mode_t st_mode; /*tipo de archivo y mode (permisos*/
-nlink_t st_nlink; /*número de enlaces duros (hard)*/
-uid_t st_uid; /*UID del usuario propietario (owner)*/
-gid_t st_gid; /*GID del usuario propietario (owner)*/
-off_t st_size; /*tamaño total en bytes para archivos regulares*/
-unsigned long st_blksize; /*tamaño bloque E/S para el sistema de archivos*/
-unsigned long st_blocks; /*número de bloques asignados*/
-time_t st_atime; /*hora último acceso*/
-time_t st_mtime; /*hora última modificación*/
-time_t st_ctime; /*hora último cambio*/
-};
-~~~
-#### Macros POSIX para comprobar el tipo del fichero.
+### Contenidos del módulo 2:
++ Sesión 1- Llamadas al sistema para el sistema de archivos. **`open`, `write`, `lseek`, `lstat`**.
 
-S_ISLNK(st_mode) Verdadero si es un enlace simbólico (soft)
-S_ISREG(st_mode) Verdadero si es un archivo regular
-S_ISDIR(st_mode) Verdadero si es un directorio
-S_ISCHR(st_mode) Verdadero si es un dispositivo de caracteres
-S_ISBLK(st_mode) Verdadero si es un dispositivo de bloques
-S_ISFIFO(st_mode) Verdadero si es una cauce con nombre (FIFO)
-S_ISSOCK(st_mode) Verdadero si es un socket
+    + Programa en el que se pasa el nombre de un archivo, se abre y se escriben sucesivamente hasta el fin del mismo en otro archivo bloques de 80 bytes. (`ejer2.c`)
 
-#### struct dirent
-~~~c
-struct dirent {
-	long d_ino; /*número i-nodo*/
-	char d_name[256]; /*nombre del archivo*/
-	off_t          d_off;       /*offset to the next dirent*/
-	unsigned short d_reclen;    /*length of this record*/
-	unsigned char  d_type;      //type of file; not supported
-};
-~~~
+    + Programa que dice si el archivo pasado como argumento es regular, un directorio, un dispositivo de caracteres, un bloque, FIFO,  enlace o socket. (`tarea2.c`)
+
+    + Programa en el que se define una macro con la misma funcionalidad que `S_ISREG(mode)`. (`ejer4.c`)
+
++ Sesión 2- Llamadas al sistema para el SA (parte II). **`umask`, `chmod`, `opendir`, `readdir`, `nftw`**.
+
+    + Programa al que se le pasa el pathname de un directorio y un número octal de 4 dígitos, y tiene que usar dicho número para cambiar los permisos de todos los archivos que se encuentren en el directorio indicado en el primer argumento, proporcionando una línea en la salidad estándar para cada archivo con su nombre, permisos antiguos y permisos nuevos.(`ejer2,2.c`).
+
+    + Programa que recorre la jerarquía de subdirectorios existentes a partir de uno dado como argumento (o el actual) y devuelve la cuenta de todos aquellos archivos regulares que tengan permiso de ejecución para el grupo y others. Además del nombre de los archivos encontrados, devolver inode y suma total de espacio ocupado.(`ejer3.c`).
+
+    + Programa igual al anterior pero usando nftw.(`ejer4_antonio.c`)
+
+    + Contenido de `struct stat` y `struct dirent`.
+
++ Sesión 3- Llamadas al sistema para el control de procesos.
+**`getpid`, `getppid`, `wait`, `fork`, `write`, `setvbuf`, familia de llamadas al sistema `exec`.**.
+
+    + Programa que tenga como argumento un entero y cree un proceso hijo que se encargue de comprobar si es par o impar, y el proceso padre de si es divisible por 4. Ambos informan de si lo es o no por la salida estándar.(`ejer1.c`)
+
+    + Programa que crea un hijo que incrementa dos variables, una global y otra local. (`tarea4.c`)
+
+    + Programa que crea 20 hijos, cada uno que crea es el hijo del anterior, y otro 20 hijos en el mismo nivel con el mismo padre.(`ejer3.c`).
+
+    + Programa que lanza 5 procesos hijo, los cuales se identifican en la salida estándar, y el padre tiene que esperar la finalización de todos ellos, detectando cada vez que termine uno.(`ejer4.c`).
+
+    + Programa como el anterior pero que espera primero a los hijos impares y luego a los pares. (`ejer5.c`).
+
+    + Programa que ejecuta desde `/usr/bin/ldd` `tarea5`, mostrando con `ldd` las bibliotecas dinámicas. (`tarea5.c`).
+
+    + Programa que acepta como argumentos el nombre de un programa, sus argumentos y opcionalmente la cadena bg, y ejecuta el programa en foreground si no se ha puesto la anterior cadena o en background en caso contrario. (`ejer7.c`).
+
++ Sesión 4- Comunicación entre procesos usando cauces.
+**`mknod`, `mkfifo`, `pipe`, `dup`, `dup2`**.
+
+    + Programa que modela el problema del productor consumidor, acepta datos del productor hasta que mande la cadena fin. (`consumidorFIFO.c`, `productorFIFO.c`).
+
+    + Programa que crea un hijo, el cual manda un mensaje a su padre a través de un cauce sin nombre. (`tarea6.c`).
+
+    + Programa que realiza la misma funcionalidad que `ls|sort`, con un cauce sin nombre entre un proceso hijo y su padre, redireccionando la salida y entrada estándar con `close` y `dup` o con `dup2`. (`tarea7.c`, `tarea8.c`).
+
+    + Programa maestro al que se le pasan los extremos de un intervalo y divide el intervalo en dos, asignando cada mitad a otro programa esclavo que ha de calcular los primos que hay en el mismo. (`maestro.c`, `esclavo.c`).
+
++ Sesión 5. Llamadas al sistema para gestión y control de señales.**`sigaction`, `kill`,`sigemptyset`, `sigsuspend`, `sigprocmask`, `sigfillset`, `sigdelset`, `memset`**.
+
+    + Programa `send_signal.c` que permite el envío de una señal a un proceso identificado por su PID. `get_signal.c` se ejecuta en background y permite la recepción de señales.
+
+    + Programa contador tal que cada vez que recibe una señal que se puede manejar, la muestra por pantalla y el número de veces que se ha recibido ese tipo de señal. (`contador.c`).
+
+    + Programa que suspende la ejecución del programa actual hasta que reciba la señal `SIGUSR1`. (`ejer3.c`).
+
+    + Programa que establece un conjunto de señales bloqueadas, desactiva la señal `SIGTERM` durante 10 segundos y restablece la máscara original. (`tarea12.c`)
+
+    + Programa en el que se suspende la ejecución del proceso actual hasta que reciba una señal distinta a `SIGUSR1`. (`tarea11.c`).
+
++ Sesión 6. Control de archivos y archivos proyectados en memoria. **`fcntl`,**.
+
+    + Programa que admite una orden de linux, el símbolo '<' ó '>' y el nombre de un archivo, y ejecutará la orden especificada en el primer argumento con la redirección indicada en el segundo argumento hacia el archivo. (`ejer1.c`).
+
+    + Programa que implementa el encaucamiento de dos órdenes linux, como el hecho para `ls|sort`, pero admitiendo cualesquiera dos órdenes. (`ejer2.c`).
+
+    + Programa que verifica que el kernel comprueba que puede darse una situación de interbloqueo en el bloqueo de archivos. (`ejer3.c`).
+
+    + Programa que se asegura de que solo hay una instancia de él en ejecución en un momento dado. (`ejer4.c`).
