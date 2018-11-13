@@ -78,3 +78,5 @@
     + Proyección anónima con `/dev/zero`. (`tarea18.c`).
 
     + Programa que muestra la forma habitual de manejar un archivo que está creciendo: especifica una proyección mayor que el archivo, tiene en cuenta su tamaño actual (asegurándonos de no hacer referencias a posiciones posteriores al fin de archivo), y deja que se incremente el tamaño del archivo conforme se escribe en él. (`tarea19.c`).
+
+    + Programa que abre dos proyecciones basadas en dos archivos pasados como parámetros y copia el primer archivo en el segundo, actúa como cp. (`ejer5.c`)
