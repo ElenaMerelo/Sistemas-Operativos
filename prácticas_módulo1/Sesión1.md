@@ -370,24 +370,3 @@ async
 + Permitir a los usuarios montar un sistema de ficheros : user, users, owner.
 + Propietario y grupo propietario de los ficheros del SA : uid=500, gid=100
 + Máscara a aplicar en los permisos de los archivos de nueva creación: umask=022
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#
