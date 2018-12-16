@@ -317,6 +317,76 @@ Le asigno el nuevo grupo a u1:
 nuevogrupi
 ~~~
 
+#### Actividad 1.7. Archivo del kernel de Linux
+Utilizando la orden (find) que ya conoces para la búsqueda de archivos en el sistema de
+archivos, anota el nombre absoluto del archivo del kernel de Linux que se ha cargado en
+el sistema operativo que estás usando en el laboratorio de prácticas para acceso modo
+root.
+~~~shell
+[root@localhost ~]# whereis Fedora
+Fedora:
+[root@localhost ~]# find / -name Fedora
+/usr/share/icons/Fedora
+[root@localhost ~]# find / -name Fedora14
+[root@localhost ~]# find / -name kernel32
+~~~
+
+#### Actividad 1.8. Organización del SA
+Un programa que se ejecuta en modo root, ¿dónde podría guardar la información temporal de
+forma que ésta se mantuviese entre arranques del sistema?
+En `/sbin` ya que el tipo de información que almacena en el estándar FHS es:
+Programas de utilidad fundamentales para ser utilizados por el usuario root.
+
+>Acceso a información del SO relativa a sistemas de archivos.
+Si pensamos en acceso a información del sistema entonces sabemos que, según el estándar FHS,
+algo deberíamos encontrar en el directorio /etc. Efectivamente, aquí disponemos de dos
+archivos fundamentales para obtener información de los sistemas de archivos: /etc/fstab y
+/etc/mtab.
+
+#### Actividad 1.9. Información de los SAs
+Los archivos /etc/fstab y /etc/mtab muestran información sobre los sistemas de archivos que
+se encuentran montados en el sistema. ¿Cuál es la diferencia entre la información que muestra
+cada uno de ellos?
+El archivo `/etc/fstab` muestra la lista de discos y
+particiones disponibles, indicando cómo montar cada dispositivo y qué
+configuración utilizar. El archivo `/etc/mtab` es un archivo de información del sistema, comúnmente en
+Unix. Este archivo lista todos los sistemas de ficheros montados junto
+con sus opciones de inicialización. mtab tiene mucho en común con fstab, pero la
+diferencia principal es que este último enumera todos los sistemas de archivos
+disponibles.
+
+>La información que muestra el archivo /etc/fstab es muy útil para comprender las opciones de
+montaje que se han realizado para cada uno de los sistemas de archivos que tenemos accesibles
+en nuestro sistema. A continuación se muestran algunas de las opciones que refleja este archivo:
++ Modo de acceso a los archivos del sistema de archivos: {rw|ro}, lectura/escritura o sólo
+lectura.
++ Modo de acceso SUID: {suid|nosuid}, si/no.
++ Montaje automático: {auto|noauto}, se permite o no el montaje automático. En el caso de
+no permitirlo no se realizará el montaje ni utilizando la orden mount -a.
++ Ejecución de archivos: {exec|noexec}, si/no.
++ Cuotas de usuario y de grupo: usrquota, grpquota.
++ Valores por defecto de montaje (defaults): rw, suid, dev, exec, auto, nouser,
+async
++ Permitir a los usuarios montar un sistema de ficheros : user, users, owner.
++ Propietario y grupo propietario de los ficheros del SA : uid=500, gid=100
++ Máscara a aplicar en los permisos de los archivos de nueva creación: umask=022
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
