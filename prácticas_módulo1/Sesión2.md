@@ -258,7 +258,7 @@ Usage: mke2fs [-c|-l filename] [-b block-size] [-f fragment-size]
 	[-O feature[,...]] [-r fs-revision] [-E extended-option[,...]]
 	[-T fs-type] [-U UUID] [-jnqvFKSV] device [blocks-count]
 
-Para ello habríamos de especificar: `mke2fs -L "LABEL_ext3" -t ext3 /dev/loop0` ó `mkfs.ext3 -m1 -L "LABEL_ext3" /dev/loop0` (Formatear la partición /dev/loop0 con el sistema de archivos ext3, con un espacio libre (desperdiciado, podemos incluso darle un 0, útil si no tenemos un sistema operativo en esta partición) reducido al 1% y con una etiqueta "LABEL_ext3") y `mke2fs -L "LABEL_ext4" -t ext4 /dev/loop1` o equivalentemente `mkfs.ext4 -L "LABEL_ext4" /dev/loop1`.
+Para ello habríamos de especificar: `mke2fs -L LABEL_ext3 -t ext3 -c /dev/loop0` ó `mkfs.ext3 -m1 -L LABEL_ext3 -c /dev/loop0` (Formatear la partición /dev/loop0 con el sistema de archivos ext3, con un espacio libre (desperdiciado, podemos incluso darle un 0, útil si no tenemos un sistema operativo en esta partición) reducido al 1% y con una etiqueta "LABEL_ext3") y `mke2fs -L LABEL_ext4 -t ext4 -c /dev/loop1` o equivalentemente `mkfs.ext4 -L LABEL_ext4 -c /dev/loop1`.
 
 >Una vez que tenemos disponibles nuestros nuevos sistemas de archivos podemos utilizar tune2fs, que nos permite ajustar determinados parámetros de los sistemas de archivos
 ext2/ext3/ext4. Se puede utilizar la opción -l para obtener un listado por pantalla que nos
@@ -391,8 +391,8 @@ Actividad 2.4.
 
 Habría que añadir las siguientes líneas:
 ~~~shell
-/dev/loop0 /mnt/SA_ext3 ext3 -ro,-L "LABEL_ext3", auto 0 0
-/dev/loop1 /mnt/LABEL_ext4 ext4 -L "LABEL_ext4", -o dirsync, auto 0 0
+/dev/loop0 /mnt/SA_ext3 ext3 -ro,-L "LABEL_ext3", auto 0 0  # o loop0  /dev/loop0 auto defaults 0 0
+/dev/loop1 /mnt/LABEL_ext4 ext4 -L "LABEL_ext4", -o dirsync, auto 0 0 # o loop1  /dev/loop1 auto defaults 0 0
 ~~~
 
 ##### APT y YUM
@@ -406,7 +406,7 @@ Algunos desarrolladores piensan que para gestionar paquetes RPM es mejor herrami
 contiene más código innecesario que se utiliza realmente para los paquetes .deb. Las siguientes
 órdenes son muy útiles al usar YUM:
 
-+ `yum list` Lista los paquetes disponibles en los repositorios para su instalación
++ `yum list` Lista los paqu etes disponibles en los repositorios para su instalación
 + `yum list installed` Lista los paquetes actualmente instalados
 + `yum list updates` Muestra todos los paquetes con actualizaciones disponibles en los
 repositorios para su instalación
@@ -486,13 +486,66 @@ información posible acerca del propio proceso de eliminación del paquete.
 
 2. Para mostrar los archivos de configuración que tiene el paquete: `rpm -a -v -q -c`, -a para que muestre el de todos los paquetes, -v para que muestre toda la información, -q porque es una query y -c para que liste solo los archivos de configuración.
 
-3. `rpm -a -v -q -R`, en este cambia que ahora usamos -R, el cual según el manual: `List  capabilities  on  which   this   package depends.`
+3. `rpm -a -v -q -R`, en este cambia que ahora usamos -R, el cual según el manual: `List  capabilities  on  which   this   package depends.`. Para los paquetes que no están instalados: `rpm -p * -v -q -R`, no devuelve nada, pero tiene sentido que sea así, en vez de especificar all le digo -p, que, según el manual:
+~~~
+-p, --package PACKAGE_FILE
+              Query an (uninstalled)  package  PACKAGE_FILE.
+              The PACKAGE_FILE may be specified as an ftp or
+              http style URL,  in  which  case  the  package
+              header  will  be  downloaded and queried.  See
+              FTP/HTTP  OPTIONS  for  information  on  rpm's
+              internal  ftp  and  http  client  support. The
+              PACKAGE_FILE  argument(s),  if  not  a  binary
+              package, will be interpreted as an ASCII pack‐
+              age manifest  unless  --nomanifest  option  is
+              used.   In  manifests, comments are permitted,
+              starting with a '#', and each line of a  pack‐
+              age manifest file may include white space sep‐
+              arated glob expressions, including URL\'s, that
+              will be expanded to paths that are substituted
+              in place of the package manifest as additional
+              PACKAGE_FILE arguments to the query.
+~~~
+
+y con \* que sean todos los paquetes que no está instalados(?).
+
+4. `rpm -i quota`
+
+5. Sería `rpm -i sysstat` y luego `rpm -e -vv sysstat` (la opción -vv muestra ugly debugging ). Otra cosa que también podría ser posible es `rpm -e -a -q --changes sysstat`, porque --changes: *Displays change  information  for  the  package with full time stamps.*
+
+#### Actividad 2.9. Sistema de cuotas para el sistema de archivos tipo ext3
+En esta actividad se van a presentar los pasos que necesitas llevar a cabo para establecer el
+sistema de cuotas de disco en Linux. El objetivo será activar el sistema de cuotas sobre el
+sistema de archivos tipo ext3 que has creado con anterioridad.
+1. Editar el archivo /etc/fstab y activar el sistema de cuotas de usuario para el SA tipo ext3.
+Busca cómo se especifica esta opción en el manual en línea. Una ayuda para la búsqueda es que
+la realices sobre la orden mount y recuerdes que las opciones de montaje vienen especificadas
+en los apartados: FILESYSTEM INDEPENDENT MOUNT OPTIONS y FILESYSTEM SPECIFIC
+MOUNT OPTIONS.
+2. Montar de nuevo el SA en el espacio de nombres para que se active la opción previamente
+establecida. Usa la siguiente orden:
+`#> mount -o remount <directorio_punto_de_montaje>`
+3. Crear el archivo que permite llevar el control de cuotas de usuario para el SA. El nombre de
+este archivo es aquota.user. Para ello utiliza la siguiente orden:
+`#> quotacheck -nm <directorio_punto_de_montaje>`
+4. Ahora procedemos a activar el sistema de control de cuotas de usuario. Para ello ejecuta la
+orden:
+`#> quotaon -a`
+5. Ahora solo falta editar la cuota para cada usuario del sistema mediante la siguiente orden. En
+este caso, establece los parámetros para cada usuario existente. Puede ser buena idea utilizar el
+archivo /etc/passwd para localizar los nombres.
+`#> edquota username`
+6. Para finalizar estableceremos el periodo de gracia para el límite soft.
+`#> edquota -t`
+
+>Órdenes útiles para el trabajo con cuotas.
++ `quota username` Asignación de las cuotas para un usuario.
++ `repquota <SA>` Estadística de las cuotas para todos los usuarios .
+
+#### Actividad 2.10. Establecer límites sobre recursos de un SA
+Establece los límites de bloques e i-nodos para un par de usuarios del sistema UML sobre el que
+trabajas en el laboratorio:
+`setquota -u <usuario_al_que_le_quiero_cambiar_las_quotas> block-softlimit block-hardlimit  inode-softlimit inode-hardlimit`
 
 
-
-
-
-
-
-
-#
+> Para montar el sistema de archivos a partir de una carpeta: `mount none /mnt/ -t hostfs -o <ruta desde home a donde tengo el paquete que quiero instalar>`
