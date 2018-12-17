@@ -234,11 +234,155 @@ gran tamaño y reduciendo la fragmentación de disco. Asignación retardada de e
 permite postergar en el tiempo la asignación de bloques de disco hasta el momento
 real en el que se va a realizar la escritura.
 
+#### Actividad 2.2. Creación de sistemas de archivos
+El objetivo es simplemente formatear lógicamente las particiones creadas con anterioridad de
+forma consistente con el tipo de SA que se estableció que iba a ser alojado. En la primera
+partición crearemos un SA de tipo ext3 y en la segunda un ext4.
+La orden que permite establecer un SA de los reconocidos dentro del sistema Linux sobre una
+partición de disco es mke2fs.
+El resultado de la ejecución de esta orden es el formateo lógico de la partición escogida
+utilizando el SA que se ha seleccionado. mke2fs es la
+orden genérica para creación de sistemas de archivos. Como requisito es necesario que
+establezcas dos etiquetas de volumen para los SAs: LABEL_ext3 para la primera partición y
+LABEL_ext4 para la segunda.
+
+>If mke2fs is run as mkfs.XXX (i.e., mkfs.ext2, mkfs.ext3, or mkfs.ext4)
+       the option -t XXX is implied; so mkfs.ext3 will create  a  file  system
+       for  use  with  ext3,  mkfs.ext4 will create a file system for use with
+       ext4, and so on.
+Usage: mke2fs [-c|-l filename] [-b block-size] [-f fragment-size]
+	[-i bytes-per-inode] [-I inode-size] [-J journal-options]
+	[-G meta group size] [-N number-of-inodes]
+	[-m reserved-blocks-percentage] [-o creator-os]
+	[-g blocks-per-group] [-L volume-label] [-M last-mounted-directory]
+	[-O feature[,...]] [-r fs-revision] [-E extended-option[,...]]
+	[-T fs-type] [-U UUID] [-jnqvFKSV] device [blocks-count]
+
+Para ello habríamos de especificar: `mke2fs -L "LABEL_ext3" -t ext3 /dev/loop0` ó `mkfs.ext3 -m1 -L "LABEL_ext3" /dev/loop0` (Formatear la partición /dev/loop0 con el sistema de archivos ext3, con un espacio libre (desperdiciado, podemos incluso darle un 0, útil si no tenemos un sistema operativo en esta partición) reducido al 1% y con una etiqueta "LABEL_ext3") y `mke2fs -L "LABEL_ext4" -t ext4 /dev/loop1` o equivalentemente `mkfs.ext4 -L "LABEL_ext4" /dev/loop1`.
+
+>Una vez que tenemos disponibles nuestros nuevos sistemas de archivos podemos utilizar tune2fs, que nos permite ajustar determinados parámetros de los sistemas de archivos
+ext2/ext3/ext4. Se puede utilizar la opción -l para obtener un listado por pantalla que nos
+muestre la información relevante de un determinado SA. Algunas opciones interesantes de la orden tune2fs:
++ -l <dispositivo> Muestra por pantalla el contenido del superbloque del SA.
++ -c max-mount-counts <dispositivo > Establece el número máximo de montajes que se puede llegar
+a realizar sin que se realice una comprobación de la
+consistencia del SA.
++ -L label <dispositivo> Poner una etiqueta al SA.
+
+Con el tiempo, las estructuras de metainformación del SA pueden llegar a corromperse. Esta
+situación podría provocar degradación en el rendimiento del sistema e incluso situaciones de
+pérdida de información. Para solucionarlo Linux automatiza el proceso de comprobación de la
+consistencia del sistema de archivos en base al número de montajes que se han realizado. No
+obstante, pueden ocurrir situaciones en las que sea necesario que el administrador ejecute
+manualmente las comprobaciones y repare las posibles inconsistencias. Linux proporciona la
+herramienta fsck para llevar a cabo esta labor.
+
+#### Actividad 2.3. Personalización de los metadatos del SA
+Consultando el manual en línea para la orden tune2fs responde a las siguientes preguntas:
+(a) ¿Cómo podrías conseguir que en el siguiente arranque del sistema se ejecutara
+automáticamente e2fsck sin que se haya alcanzado el máximo número de montajes? Poniendo `tune2fs -c -1`, ya que según el manual:
+~~~shell
+ -c max-mount-counts
+              Adjust  the  number of mounts after which the filesystem will be
+              checked by e2fsck(8).  If max-mount-counts is 0 or -1, the  num‐
+              ber  of  times  the filesystem is mounted will be disregarded by
+              e2fsck(8) and the kernel.
+~~~
+Otra opción posible sería empleando
+~~~shell
+-C mount-count
+              Set  the  number  of  times  the  filesystem  has been
+              mounted.  If set to a  greater  value  than  the  max-
+              mount-counts parameter set by the -c option, e2fsck(8)
+              will check the filesystem at the next reboot.
+~~~
+Es decir, estableciendo con esa opción un número suficientemente grande (número más grande de veces que el sistema de archivos es montado) en el próximo arranque se ejecutará e2fsck.
 
 
+(b) ¿Cómo podrías conseguir reservar para uso exclusivo de un usuario username un número de
+bloques del sistema de archivos? `tune2fs -r <number> -u username`, incluso sin especificar -r diría yo que va.
+~~~shell
+-r reserved-blocks-count
+              Set the number of reserved filesystem blocks.
+-u user
+              Set the user  who  can  use  the  reserved  filesystem
+              blocks.   user  can be a numerical uid or a user name.
+              If a user name is given, it is converted to a  numeri‐
+              cal uid before it is stored in the superblock.
+~~~
 
+#### Actividad 2.4. Montaje de sistemas de archivos
+Utiliza el manual en línea para descubrir la forma de montar nuestros SAs de manera que
+cumplas los siguientes requisitos:
+3. El SA etiquetado como LABEL_ext3 debe estar montado en el directorio /mnt/SA_ext3 y
+en modo de solo lectura.
+4. El SA etiquetado como LABEL_ext4 debe estar montado en el directorio /mnt/LABEL_ext4
+y debe tener sincronizadas sus operaciones de E/S de modificación de directorios.
 
+~~~shell
+The standard form of the mount command is:
 
+              mount -t type device dir
+
+       This  tells  the kernel to attach the filesystem found on device (which
+       is of type type) at the directory dir.  The option -t type is optional.
+The following command lists all mounted filesystems (of type type):
+
+             mount [-l] [-t type]
+Most  devices  are indicated by a filename (of a block special device),
+      like /dev/sda1
+
+It is
+also possible to indicate a block special device using  its  filesystem
+label or UUID (see the -L and -U options below), or its partition label
+or UUID.
+~~~
+Basándonos en lo anterior, para hacer el apartado 3 debemos especificar:
+`mount -r -L "LABEL_ext3" /dev/loop0 /mnt/SA_ext3` (habiendo hecho antes `mkdir /mnt/SA_ext3`), y para 4: `mount -L "LABEL_ext4" -o dirsync /dev/loop1 /mnt/LABEL_ext4`, habiendo creado previamente el directorio en el que vamos a montarlo.
+
+##### Formato del archivo /etc/fstab
+Como vimos en la sesión anterior, /etc/fstab es el archivo de configuración que contiene la
+información sobre todos los sistemas de archivos que se pueden montar y de las zonas de
+intercambio a activar. El formato del archivo se describe a continuación:
+<file system> <mount point> <type> <options> <dump> <pass>
+
++ <file system>, es el número que identifica el archivo especial de bloques .
+
++ <mount point>, es el directorio que actua como punto de montaje.
+
++ <type>, tipo de sistema de archivos (ext2, ext3, ext4, vfat, iso9660, swap, nfs, etc.)
+
++ <options>, son las opciones que se utilizarán en el proceso de montaje. Se especifican
+como una lista separada por comas y sin espacios.
+
++ <dump>, normalmente no se usa, pero si su valor es distinto de 0 indica la frecuencia con
+la que se realizará una copia de seguridad del SA.
+
++ <pass> , durante el arranque del sistema este campo especifica el orden en el que la
+orden fsck realizará las comprobaciones sobre los SAs.
+
+A continuación se muestran las posibles opciones que pueden especificarse en el campo
+<options>:
++ rw. Lectura-escritura
+
++ ro. Sólo lectura
+
++ suid/nosuid. Permitido el acceso en modo SUID, o no permitido
+
++ auto/noauto. Montar automáticamente o no montar automáticamente (ni ejecutando
+mount -a)
+
++ exec/noexec. Permitir la ejecución de ficheros, o no permitir
+
++ usrquota, grpquota. Cuotas de usuario y de grupo
+
++ defaults = rw,suid,dev,exec,auto,nouser,async
+
++ user, users, owner. Permitir a los usuarios montar un sistema de archivos
+
++ uid=500, gid=100. Propietario y grupo propietario de los archivos del SA.
+
++ umask. Máscara para aplicar los permisos a los archivos.
 
 
 
