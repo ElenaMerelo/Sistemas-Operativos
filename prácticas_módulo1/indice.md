@@ -7,4 +7,10 @@ Sesión 1:
 
 Sesión 2:
 + `mknod`, `dd`, `losetup`, `fdisk`
-+ 
++ `mke2fs` ó 'mkfs'
++ `tune2fs`
+
+
+Sesión 3:
++ `uptime`, `w`, `time`
++ `nice`, `renice`

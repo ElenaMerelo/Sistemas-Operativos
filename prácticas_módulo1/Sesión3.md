@@ -93,6 +93,12 @@ seleccione a todo proceso que esté en el sistema y “f” que se muestre infor
 (aunque con la opción “l” se imprime en pantalla más información). Sin argumentos muestra los
 procesos lanzados por el usuario que ejecuta esta orden.
 
+#### Actividad 3.3. Jerarquía e información de procesos
+a) La orden pstree muestra el árbol de procesos que hay en ejecución. Comprueba que la
+jerarquía mostrada es correcta haciendo uso de la orden ps y de los valores “PID" y “PPID" de
+cada proceso. Para mostrar solo los PID Y PPID de los procesos en ejecución hacemos `ps -o pid,ppid`, y sería cuestión ya de ver que al especificar `pstree -p` hay algún proceso del árbol con los pids resultantes de ejecutar la primera orden.
+b) Ejecuta la orden ps con la opción -A, ¿qué significa que un proceso tenga un carácter “?” en
+la columna etiquetada como TTY? Que es un demonio, por lo que no tiene asociado terminal.
 
 
 
