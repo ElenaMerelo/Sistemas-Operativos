@@ -47,12 +47,11 @@ de la información especificada en los archivos /etc/default/useradd y /etc/logi
 #### Actividad 1.2. Valores por omisión para nuevas cuentas
 Visualiza el contenido de los dos archivos anteriores y comprueba cuáles son las opciones por
 defecto que tendría un usuario que se creara en nuestro sistema. A continuación, crea una
-cuenta de usuario y visualiza el contenido de los archivos /etc/passwd y /etc/group, y el
-Guía Práctica de Sistemas Operativos-13directorio /home para comprobar que los nuevos datos se han rellenado conforme a la
+cuenta de usuario y visualiza el contenido de los archivos /etc/passwd y /etc/group, y el directorio /home para comprobar que los nuevos datos se han rellenado conforme a la
 especificación tomada de /etc/default/useradd y /etc/login.defs.
 
 ~~~shell
-[root@localhost ~]# cat /etc/default/useradd
+[root@localhost ~]\# cat /etc/default/useradd
 # useradd defaults file
 GROUP=100
 HOME=/home
@@ -62,7 +61,7 @@ SHELL=/bin/bash
 SKEL=/etc/skel
 CREATE_MAIL_SPOOL=yes
 
-[root@localhost ~]# cat /etc/login.defs
+[root@localhost ~]\# cat /etc/login.defs
 # *REQUIRED*
 #   Directory where mailboxes reside, _or_ name of file, relative to the
 #   home directory.  If you _do_ define both, MAIL_DIR takes precedence.
@@ -139,7 +138,7 @@ En el directorio `/etc/skel` se guardan unos archivos de configuración del shel
 copian al directorio HOME asignado cuando se crea una cuenta de usuario. Posteriormente, cada
 usuario podrá personalizar su copia. Estos archivos son guiones shell que realizan determinadas
 tareas como inicializar variables, ejecutar funciones específicas, establecer los alias, etc. Estos
-archivos dependen del intérprete de órdenes seleccionado y en el caso del bash son:
+archivos dependen del intérprete de órdenes seleccionado y en el caso de bash son:
 + `.bash_profile` se ejecuta al hacer el login (conectarnos al sistema) y en él podremos indicar
 alias, variables, configuración del entorno, etc. que deseamos iniciar al
 principio de la sesión.
@@ -152,7 +151,7 @@ programas, scripts, etc., que deseemos ejecutar al salirnos de la sesión.
 1. Utiliza el manual en línea para leer la sintaxis completa de la utilidad para creación de
 cuentas y crea dos o tres usuarios en tu sistema cambiando alguno de los valores por
 defecto.
-2. Elimina alguno de ellos y comprueba que “rastro” ha dejado la cuenta recién eliminada en
+2. Elimina alguno de ellos y comprueba qué “rastro” ha dejado la cuenta recién eliminada en
 el sistema.
 3. Entra (orden su) en el sistema como uno de estos usuarios que has creado y mira qué
 archivos tiene en su directorio home. La orden sudo permite cambiar el modo de trabajo a
@@ -200,7 +199,7 @@ que era /home/otro_home y no la opción por defecto /home/u1 como comprobamos, m
 no aparece ninguno: son todo archivos ocultos, para verlos especifico otra opción
 y obtenemos:
 ~~~shell
-[root@localhost ~]# su u1
+[root@localhost ~]\# su u1
 [u1@localhost root]$ ls /home/otro_home/
 [u1@localhost root]$ ls /home/u1
 ls: cannot access /home/u1: No such file or directory
@@ -234,7 +233,7 @@ trabajo del usuario.
 
 #### Actividad 1.5. Archivo /etc/shadow
 Visualiza el archivo /etc/shadow desde un usuario distinto al root ¿Te da algún problema?
-¿Sabes por qué? Intenta averiguarlo. Da problema ya que solo se puede visualizar
+¿Sabes por qué? Intenta averiguarlo: Da problema ya que solo se puede visualizar
 estando en modo root:
 ~~~shell
 > cat /etc/shadow
@@ -248,28 +247,28 @@ cat: /etc/shadow: Permiso denegado
 Para las cuentas de los usuarios se pueden establecer restricciones de tiempo, también llamadas
 de envejecimiento, respecto a la validez de la cuenta o de la contraseña. Los valores se guardan
 en el archivo /etc/shadow. La siguiente tabla muestra los valores posibles.
-+ changed fecha del último cambio de contraseña
-+ minlife número de días que han de pasar para poder cambiar la contraseña
-+ maxlife número de días máximo que puede estar con la misma contraseña sin cambiarla
-+ warn cuántos días antes de que la contraseña expire (maxlife) será informado sobre ello,
++ `changed` fecha del último cambio de contraseña
++ `minlife` número de días que han de pasar para poder cambiar la contraseña
++ `maxlife` número de días máximo que puede estar con la misma contraseña sin cambiarla
++ `warn` cuántos días antes de que la contraseña expire (maxlife) será informado sobre ello,
 indicándole que tiene que cambiarla
-+ inactive número de días después de que la contraseña expire que la cuenta se deshabilitará
++ `inactive` número de días después de que la contraseña expire que la cuenta se deshabilitará
 de forma automática si no ha sido cambiada
-+ expired fecha en la que la cuenta expira y se deshabilita de forma automática
++ `expired` fecha en la que la cuenta expira y se deshabilita de forma automática
 Los valores los establece el administrador con las órdenes chage o con passwd. Recordemos que
 el archivo /etc/login.defs tiene los valores por defecto. La siguiente tabla muestra algunas
 opciones y argumentos útiles para la orden chage.
-+ chage -d ult_día usuario fecha del último cambio de password
-+ chage -m min_días usuario no de días que han de pasar para poder cambiar la
++ `chage -d ult_día usuario`-> fecha del último cambio de password
++ `chage -m min_días usuario` -> nº de días que han de pasar para poder cambiar la
 contraseña
-+ chage -M max_días usuario no de días máximo que puede estar con la misma
++ `chage -M max_días usuario` -> nº de días máximo que puede estar con la misma
 contraseña sin cambiarla
-+ chage -W warn_días usuario cuántos días antes de que la contraseña expire (maxlife)
++ `chage -W warn_días usuario` -> cuántos días antes de que la contraseña expire (maxlife)
 será avisado de ello, indicándole que tiene que cambiarla
-+ chage -I inac_días usuario no de días después de que la contraseña expire que la
++ `chage -I inac_días usuario` -> nº de días después de que la contraseña expire que la
 cuenta se deshabilitará de forma automática si la
 contraseña no ha sido cambiada
-+ chage -E exp_días usuario fecha en la que la cuenta expira y se deshabilita de forma
++ `chage -E exp_días usuario` -> fecha en la que la cuenta expira y se deshabilita de forma
 automática
 
 ###### Gestión de grupos
@@ -279,40 +278,40 @@ repetirlos cada vez que se desee aplicarlos.
 Un grupo se caracteriza por:
 + Nombre del grupo, o groupname
 + Identificador del grupo (GID, del inglés Group Identifier) que es un número que permite
-al sistema identificar al grupo (ver sección 4.2).
+al sistema identificar al grupo.
 + Archivo de configuración /etc/group. Cada línea de este archivo presenta el siguiente
 formato: nombre: x:gid:lista de usuarios
 >Órdenes relacionadas con la gestión de grupos.
-+ groupadd grupo crea un nuevo grupo
-+ groupmod grupo modifica un grupo existente
-+ groupdel grupo elimina un grupo
-+ newgrp grupo cambia de grupo activo (lanza un shell con ese grupo)
-+ gpasswd grupo asigna una contraseña a un grupo
-+ gpasswd -a user grupo añade un usuario a un grupo
-+ groups [usuario] informa de los grupos a los que pertenece un usuario
-+ id [usuario] lista el identificador del usuario y los grupos a los que
++ `groupadd grupo` -> crea un nuevo grupo
++ `groupmod grupo` -> modifica un grupo existente
++ `groupdel grupo` -> elimina un grupo
++ `newgrp grupo` -> cambia de grupo activo (lanza un shell con ese grupo)
++ `gpasswd grupo` -> asigna una contraseña a un grupo
++ `gpasswd -a user grupo` -> añade un usuario a un grupo
++ `groups [usuario]` -> informa de los grupos a los que pertenece un usuario
++ `id [usuario]` -> lista el identificador del usuario y los grupos a los que
 pertenece
-+ grpck comprueba la consistencia del archivo de grupos
++ `grpck` comprueba la consistencia del archivo de grupos
 
 #### Actividad 1.6. Creación de grupos
 1. Crea un par de grupos y asignáselos a algunos de los usuarios de tu sistema.
 2. ¿Qué información devuelve la orden id si estás conectado como root?
 ~~~shell
-[root@localhost ~]# groupadd nuevogrupi
-[root@localhost ~]# groups
+[root@localhost ~]\# groupadd nuevogrupi
+[root@localhost ~]\# groups
 root bin daemon sys adm disk wheel
-[root@localhost ~]# id
+[root@localhost ~]\# id
 uid=0(root) gid=0(root) groups=0(root),1(bin),2(daemon),3(sys),4(adm),6(disk),10(wheel)
-[root@localhost ~]# man groupadd
+[root@localhost ~]\# man groupadd
 -bash: man: command not found
-[root@localhost ~]# cat /etc/group
+[root@localhost ~]\# cat /etc/group
 [...]
 nuevogrupi:x:502:
 ~~~
 Le asigno el nuevo grupo a u1:
 ~~~shell
-[root@localhost ~]# usermod -g nuevogrupi u1
-[root@localhost ~]# su u1
+[root@localhost ~]\# usermod -g nuevogrupi u1
+[root@localhost ~]\# su u1
 [u1@localhost root]$ groups
 nuevogrupi
 ~~~
