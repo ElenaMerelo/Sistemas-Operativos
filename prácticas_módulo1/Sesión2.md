@@ -6,7 +6,7 @@ código numérico que determina el tipo de partición. Cada SO tiene sus propios
 numéricos para las particiones pero nosotros solamente nos vamos a centrar en los que se
 utilizan en Linux. Por ejemplo, el código asociado a una partición que va a alojar un SA de tipo
 ext2 es el 0x83, y el de una partición de intercambio (swap) es el 0x82. Para ver una lista de los
-tipos de particiones soportados y sus códigos asociados puedes usar la siguiente orden:
+tipos de particiones soportados y sus códigos asociados se puede usar la siguiente orden:
 /sbin/sfdisk -T. El número de particiones que podemos establecer en un dispositivo bajo una arquitectura Intel
 está limitado debido a la “compatibilidad hacia atrás”. La primera
 tabla de particiones (básicamente, es una tabla en la que cada entrada mantiene la
@@ -19,8 +19,7 @@ Una partición primaria de disco puede a su vez dividirse. Estas subdivisiones s
 nombre de particiones lógicas. De esta forma podemos saltarnos la restricción histórica de
 poder establecer solamente cuatro particiones por dispositivo de almacenamiento secundario.
 La partición primaria que se usa para alojar las particiones lógicas se conoce como partición
-extendida y tiene su propio tipo de partición: 0x05 (puedes comprobarlo con la orden que ya
-conoces). A pesar de que a priori podríamos pensar que, de esta forma, el número de particiones
+extendida y tiene su propio tipo de partición: 0x05. A pesar de que a priori podríamos pensar que, de esta forma, el número de particiones
 que podemos establecer en un dispositivo es “ilimitado”, esto no es así. Como casi siempre, los
 SO imponen límites en el número de recursos disponibles y, por supuesto, el número de
 particiones no iba a ser una excepción. Por ejemplo, Linux limita el número máximo de
@@ -31,7 +30,7 @@ IDE.
 Para responder a esta pregunta vamos a establecer una clasificación de los dispositivos de
 almacenamiento secundario, pues según si el dispositivo actuará como dispositivo de
 arranque (Boot drive) o no, será necesario establecer una distribución de particiones u otra. Un
-dispositivo de arranque va a ser el dispositivo que utilize en primer lugar la BIOS de nuestra
+dispositivo de arranque va a ser el dispositivo que utilice en primer lugar la BIOS de nuestra
 arquitectura para cargar en memoria el programa SO (¡o un programa cargador de SOs!).
 Si queremos que nuestro SO arranque desde el dispositivo sobre el que vamos a realizar las
 particiones necesitamos establecer la siguiente configuración de particiones:
@@ -107,16 +106,11 @@ Disk identifier: 0x00000000
 
 Disk /dev/loop1 doesn't contain a valid partition table
 ~~~
-##### Preparación previa a la partición de un pen drive
-En primer lugar, introduce el pen drive en el conector USB y, a continuación podrás ver el
-archivo especial de dispositivo que se le ha asignado y el directorio que actúa como punto de
-montaje usando el archivo /proc/mounts (también la orden mount sin argumentos). Para poder
-realizar la partición del pen drive debemos desmontar el dispositivo: umount.
-Independientemente de la opción escogida, A) o B), ahora podemos proceder a crear la tabla de
+##### Creación de la partición
+Ahora podemos proceder a crear la tabla de
 particiones mediante fdisk, ya sea en el pen drive o en los “discos virtuales” /dev/loop0 Y
 /dev/loop1. Una vez que hayamos finalizado el proceso podemos comprobar si la tabla de
-particiones es correcta con la orden que ya conoces. El listado de salida debería parecerse a la
-salida por pantalla que se muestra a continuación.
+particiones es correcta con la orden última.
 
 Para crear la tabla de particiones hacemos primeramente `fdisk /dev/loop0`, especificando
 la opción n( in order to add a new partition), elijo luego que sea una primary partition 2,
@@ -215,6 +209,30 @@ Disk identifier: 0x48d96247
 /dev/loop1p3            4321        5678         679   83  Linux
 ~~~
 
+#### Asignación de un Sistema de Archivos a una partición (formateo lógico)
+Una vez que disponemos de las particiones en nuestro dispositivo de almacenamiento secundario
+debemos proceder a asignar el sistema de archivos adecuado a cada una de las particiones. En
+Linux, aparte del SA específico para las particiones especialmente dedicadas a intercambio
+(swap), se utilizan normalmente tres sistemas de archivos: ext2, ext3 y ext4:
++ ext2. Es el sistema de archivos de disco de alto rendimiento usado en Linux para discos
+duros, memorias flash y medios extraíbles. El second extended file system se diseñó como
+una extensión del extended file system (ext). ext2 ofrece el mejor rendimiento en términos
+de velocidad de transferencia de E/S y uso de CPU de entre todos los sistemas de archivos
+que soporta Linux.
++ ext3. Es una versión de ext2 que incluye “registro por diario” (journaling). El journaling
+es un mecanismo por el cual un sistema informático puede implementar transacciones. Se
+basa en llevar un journal o registro de diario en el que se almacena la información
+necesaria para restablecer los datos afectados por la transacción en caso de que ésta
+falle. La aplicación del journaling en los sistemas de archivos modernos permite evitar la
+corrupción de las estructuras de datos que soportan la información del sistema de
+archivos: estructura de directorios, estructura de bloques libres de disco y estructuras
+que soportan los atributos de los archivos.
++ ext4. Es el estándar de facto actual de las distribuciones Linux. Este SA tiene unas
+estructuras similares a las del ext3 pero, además, presenta las siguientes mejoras: Extensiones: permiten describir un conjunto de bloques de disco
+contiguos, mejorando de esta forma el rendimiento de E/S al trabajar con archivos de
+gran tamaño y reduciendo la fragmentación de disco. Asignación retardada de espacio en disco (allocate-on-flush): Esta técnica
+permite postergar en el tiempo la asignación de bloques de disco hasta el momento
+real en el que se va a realizar la escritura.
 
 
 
