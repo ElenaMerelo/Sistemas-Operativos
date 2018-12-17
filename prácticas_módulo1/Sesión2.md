@@ -384,8 +384,103 @@ mount -a)
 
 + umask. Máscara para aplicar los permisos a los archivos.
 
+#### Actividad 2.5. Automontaje de Sistemas de Archivos
+Escribe las dos líneas necesarias en el archivo /etc/fstab para que se monten automáticamente
+nuestros dos SA en el arranque del sistema con los mismos requisitos que se han pedido en la
+Actividad 2.4.
 
+Habría que añadir las siguientes líneas:
+~~~shell
+/dev/loop0 /mnt/SA_ext3 ext3 -ro,-L "LABEL_ext3", auto 0 0
+/dev/loop1 /mnt/LABEL_ext4 ext4 -L "LABEL_ext4", -o dirsync, auto 0 0
+~~~
 
+##### APT y YUM
+APT (Advanced Packaging Tool) fue originalmente desarrollado por Debian Linux y modificado
+para su uso también con paquetes RPM. Tanto APT, como su interfaz gráfico Synaptic, son fáciles
+de utilizar. Existen varios proveedores principales de paquetes y repositorios para APT, por
+ejemplo http://www.freshrmps.net, pero no se deben utilizar simultáneamente porque a veces
+existen conflictos entre versiones.
+Algunos desarrolladores piensan que para gestionar paquetes RPM es mejor herramienta YUM
+(Yellow dog Updater, Modified - http://yum.baseurl.org) que APT. Además, parece que APT
+contiene más código innecesario que se utiliza realmente para los paquetes .deb. Las siguientes
+órdenes son muy útiles al usar YUM:
+
++ `yum list` Lista los paquetes disponibles en los repositorios para su instalación
++ `yum list installed` Lista los paquetes actualmente instalados
++ `yum list updates` Muestra todos los paquetes con actualizaciones disponibles en los
+repositorios para su instalación
++` yum install <nombre-paquete>` Instala el paquete cuyo nombre es especificado
++ `yum update` Se actualizan todos los paquetes instalados
++ `yum remove <nombre-paquete>` Elimina el paquete cuyo nombre es especificado, así como los paquetes
+que dependen de éste
+
+Existen varios interfaces gráficos que utilizan directamente YUM tales como los mencionados
+anteriormente: PackageKit y gnome-packagekit. Aunque YUM sólo proporciona una interfaz para
+línea de órdenes, resulta muy cómodo y fácil de usar. Puede ejecutar la siguiente órden en el
+shell para obtener un listado más completo de las órdenes y opciones disponibles en YUM: `#> yum –-help | more`
+
+#### Actividad 2.7. Trabajo con el gestor de paquetes YUM
+Encuentra los archivos de configuración de YUM y explora las distintas órdenes disponibles en
+YUM ejecutándolas. En concreto, lista todos los paquetes instalados y disponibles, elimina el
+paquete instalado que te indique el profesor de prácticas, y a continuación vuelve a instalar el
+mismo paquete haciendo uso de los paquetes que se encuentran disponibles en
+/fenix/depar/lsi/so/paquetes. Para obtener acceso a este directorio del sistema de archivos
+anfitrión ejecute la siguiente órden de montaje una vez lanzado el sistema operativo User Mode
+Linux (UML):
+`#> mount none /<directorio-punto-montaje> /fenix/depar/lsi/so/paquetes -t hostfs -o`
+Tenga en cuenta que algunas órdenes de YUM pueden no funcionar bien debido a que no pueden
+acceder a los sitios web que mantienen repositorios de paquetes, ya que no existe conexión a
+Internet en la configuración actual del sistema operativo UML. Para descargar paquetes de uno
+de los principales sitios web encargados de mantener repositorios de paquetes en código binario
+y fuente, con el navegador Web acceda a https://admin.fedoraproject.org/pkgdb. Puede
+realizar la búsqueda de un paquete binario específico introduciendo parte del nombre y pulsando
+el botón BUILD, o puede acceder al listado completo de paquetes pulsando sobre Builds en el
+menú de navegación que se encuentra a la izquierda.
+
++ Para mostrar una lista de los paquetes instalados: `yum list installed`
++ Para mostrar una lista de los paquetes que están disponibles para ser instalados: `yum list avalaible`
++ Para mostrar una lista de los paquetes disponibles e instalados: `yum list all`
+
++ Para borrar cualquier paquete: `yum remove paquete` (ó equivalentemente `yum erase paquete`)
+
++ Para luego volver a instalarlo: `yum install paquete`
+
+##### RPM
+El gestor de paquetes RPM desciende del primer software de gestión de paquetes Linux.
+Accediendo al manual de RPM o ejecutando `rpm --help`, se puede obtener  una descripción detallada de las opciones disponibles.
+El formato general para la línea de órdenes se muestra a continuación:
+`#> rpm <opciones> <nombres-paquetes>`
+
+>Clasificación de tipos de operaciones en el gestor RPM y órdenes más comunes.
+
++ Instalación de nuevos paquetes: `rpm -i <nombre-archivo-paquete>`. Si la operación tiene éxito no se mostrará ningún mensaje.
+
++ Eliminación de paquetes instalados: `rpm -e <nombre-paquete>`. Si la operación tiene éxito no se mostrará ningún mensaje.
+
++ Actualización de paquetes instalados: `rpm -U <nombre-archivo-paquete>`. La actualización se consigue descargando el paquete que corresponde a la nueva versión y ejecutando RPM con la opción -U, que además incluye la eliminación automática de la versión del paquete previamente instalada. También `rpm -F <nombre-servidor-HTTP/FTP>`. Se buscará el paquete en el servidor designado en Internet y se preparará la correspondiente actualización.
+
++ Obtención de información sobre paquetes software: `rpm -qa | grep <parte-nombre- paquete-buscado> | sort`. Esta línea de órdenes puede utilizarse para buscar paquetes instalados por su nombre o parte de éste. También `rpm -qi <nombre-paquete>` Muestra información precisa del
+paquete instalado que se especifica.
+
++ Verificación e integridad de la instalación: `rpm -V <nombre_paquete  ` Consulta en la base de datos para verificar la instalación de un paquete recientemente instalado. Si la instalación se ha realizado correctamente, la orden no produce información de salida.
+
+Actividad 2.8. Trabajo con el gestor de paquetes rpm
+En primer lugar deseamos mostrar cierta metainformación acerca de uno o más paquetes ya
+instalados. Para ello debes utilizar la orden rpm con las opciones adecuadas. Utiliza el manual en
+línea si no sabes ya las opciones que debes utilizar.
+1. Muestra la información general (nombre, versión, arquitectura, grupo, descripción, etc.) y
+lista los archivos que contiene un paquete ya instalado haciendo uso de la orden rpm y un
+único conjunto de opciones.
+Guía Práctica de Sistemas Operativos-402. Idem que el anterior pero mostrando únicamente los archivos de configuración que
+contiene el paquete.
+3. Escribe una orden que muestre los paquetes requeridos por un paquete determinado que
+se encuentre instalado en el sistema. Escriba la orden que devuelva el mismo resultado
+pero para un paquete no instalado en el sistema.
+4. Instala el paquete quota que encontrarás en el directorio de software de la asignatura
+(directorio que ya has montado en la Actividad 2.7).
+5. Instala y desinstala el paquete sysstat mostrando en pantalla también la máxima
+información posible acerca del propio proceso de eliminación del paquete.
 
 
 
