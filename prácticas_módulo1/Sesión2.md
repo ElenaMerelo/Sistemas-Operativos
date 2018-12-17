@@ -465,14 +465,13 @@ paquete instalado que se especifica.
 
 + Verificación e integridad de la instalación: `rpm -V <nombre_paquete  ` Consulta en la base de datos para verificar la instalación de un paquete recientemente instalado. Si la instalación se ha realizado correctamente, la orden no produce información de salida.
 
-Actividad 2.8. Trabajo con el gestor de paquetes rpm
+#### Actividad 2.8. Trabajo con el gestor de paquetes rpm
 En primer lugar deseamos mostrar cierta metainformación acerca de uno o más paquetes ya
-instalados. Para ello debes utilizar la orden rpm con las opciones adecuadas. Utiliza el manual en
-línea si no sabes ya las opciones que debes utilizar.
+instalados. Para ello debes utilizar la orden rpm con las opciones adecuadas.
 1. Muestra la información general (nombre, versión, arquitectura, grupo, descripción, etc.) y
 lista los archivos que contiene un paquete ya instalado haciendo uso de la orden rpm y un
 único conjunto de opciones.
-Guía Práctica de Sistemas Operativos-402. Idem que el anterior pero mostrando únicamente los archivos de configuración que
+2. Ídem que el anterior pero mostrando únicamente los archivos de configuración que
 contiene el paquete.
 3. Escribe una orden que muestre los paquetes requeridos por un paquete determinado que
 se encuentre instalado en el sistema. Escriba la orden que devuelva el mismo resultado
@@ -481,7 +480,13 @@ pero para un paquete no instalado en el sistema.
 (directorio que ya has montado en la Actividad 2.7).
 5. Instala y desinstala el paquete sysstat mostrando en pantalla también la máxima
 información posible acerca del propio proceso de eliminación del paquete.
+**Solución**
 
+1. Para mostrar la información general de todos los paquetes instalados habría que poner `rpm -a -v -q -i`. Pongo el -v para que sea verbose, si no no solo muestra los nombres de los paquetes, y la opción -q -i es la que muestra información del paquete, incluyendo nombre, versión y descripción.
+
+2. Para mostrar los archivos de configuración que tiene el paquete: `rpm -a -v -q -c`, -a para que muestre el de todos los paquetes, -v para que muestre toda la información, -q porque es una query y -c para que liste solo los archivos de configuración.
+
+3. `rpm -a -v -q -R`, en este cambia que ahora usamos -R, el cual según el manual: `List  capabilities  on  which   this   package depends.`
 
 
 
