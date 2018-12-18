@@ -11,7 +11,7 @@ tipos de particiones soportados y sus códigos asociados se puede usar la siguie
 está limitado debido a la “compatibilidad hacia atrás”. La primera
 tabla de particiones (básicamente, es una tabla en la que cada entrada mantiene la
 información asociada a una partición: donde comienza y finaliza la partición en el disco, tipo de
-partición, partición de arranque (si/no), y algo más) se almacenaba como parte del sector de
+partición, partición de arranque (si/no),...) se almacenaba como parte del sector de
 arranque maestro (master boot record, MBR) y solamente tenía espacio para almacenar
 cuatro entradas. Estas cuatro particiones se conocen en la actualidad como particiones
 primarias.
@@ -406,7 +406,7 @@ Algunos desarrolladores piensan que para gestionar paquetes RPM es mejor herrami
 contiene más código innecesario que se utiliza realmente para los paquetes .deb. Las siguientes
 órdenes son muy útiles al usar YUM:
 
-+ `yum list` Lista los paqu etes disponibles en los repositorios para su instalación
++ `yum list` Lista los paquetes disponibles en los repositorios para su instalación
 + `yum list installed` Lista los paquetes actualmente instalados
 + `yum list updates` Muestra todos los paquetes con actualizaciones disponibles en los
 repositorios para su instalación
@@ -418,7 +418,7 @@ que dependen de éste
 Existen varios interfaces gráficos que utilizan directamente YUM tales como los mencionados
 anteriormente: PackageKit y gnome-packagekit. Aunque YUM sólo proporciona una interfaz para
 línea de órdenes, resulta muy cómodo y fácil de usar. Puede ejecutar la siguiente órden en el
-shell para obtener un listado más completo de las órdenes y opciones disponibles en YUM: `#> yum –-help | more`
+shell para obtener un listado más completo de las órdenes y opciones disponibles en YUM: `#> yum --help | more`
 
 #### Actividad 2.7. Trabajo con el gestor de paquetes YUM
 Encuentra los archivos de configuración de YUM y explora las distintas órdenes disponibles en

@@ -302,8 +302,6 @@ pertenece
 root bin daemon sys adm disk wheel
 [root@localhost ~]\# id
 uid=0(root) gid=0(root) groups=0(root),1(bin),2(daemon),3(sys),4(adm),6(disk),10(wheel)
-[root@localhost ~]\# man groupadd
--bash: man: command not found
 [root@localhost ~]\# cat /etc/group
 [...]
 nuevogrupi:x:502:
