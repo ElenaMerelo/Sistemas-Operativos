@@ -471,15 +471,3 @@ total 192556
 13240719 brw-r--r-- 1 root  root       5, 0 dic 18 09:39  disp_bloques
 13240720 crw-r--r-- 1 root  root       5, 1 dic 18 09:39  disp_caracteres
 ~~~
-
-
-
-
-
-
-
-
-
-
-
->
